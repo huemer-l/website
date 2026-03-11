@@ -14,123 +14,85 @@
             min-height: 100vh; padding-bottom: 50px;
         }
 
-        /* --- LOGIN SCREEN --- */
+        /* --- LOGIN --- */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #1a1a2e; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 5000;
         }
-        .pin-input {
-            padding: 15px; font-size: 20px; text-align: center;
-            border-radius: 8px; border: none; letter-spacing: 5px;
-            margin-bottom: 15px; width: 150px;
-        }
+        .pin-input { padding: 15px; font-size: 20px; text-align: center; border-radius: 8px; border: none; width: 150px; }
 
-        /* --- DASHBOARD LAYOUT --- */
-        #dashboard { display: none; width: 98%; max-width: 1400px; padding: 10px; margin-top: 10px; }
+        /* --- LAYOUT --- */
+        #dashboard { display: none; width: 98%; max-width: 1600px; padding: 10px; margin-top: 10px; }
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         
         .dashboard-grid { 
             display: grid; 
-            grid-template-columns: 320px 1fr 320px; /* Festgelegte Breite für die Seiten */
+            grid-template-columns: 320px 1fr 320px; 
             gap: 20px; 
             align-items: start; 
         }
 
-        /* --- KARTEN DESIGN --- */
-        .card {
-            background: #16213e; border-radius: 15px; padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460;
-            margin-bottom: 20px;
-        }
-        #overdue-card { border: 2px solid #e94560; background: #231520; display: none; }
+        .card { background: #16213e; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460; margin-bottom: 20px; }
         h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 18px; }
         
-        /* --- UHR & DATUM --- */
-        #time { font-size: 38px; font-weight: bold; margin: 0; color: #4ecca3; }
+        #time { font-size: 38px; font-weight: bold; color: #4ecca3; }
         #date { font-size: 14px; color: #a0a0a0; }
 
-        /* --- BUTTONS & INPUTS --- */
+        /* --- INPUTS & BUTTONS --- */
         input, select { padding: 8px; margin: 5px 0; border-radius: 5px; border: none; width: 100%; box-sizing: border-box; }
-        button {
-            background: #4ecca3; color: #1a1a2e; padding: 10px; border: none; 
-            border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; font-size: 13px;
-        }
-        button:hover { opacity: 0.8; }
+        button { background: #4ecca3; color: #1a1a2e; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; }
         .btn-secondary { background: #0f3460; color: white; }
-        .btn-sync { background: #e94560; color: white; width: auto; margin: 0; display: flex; align-items: center; gap: 5px; padding: 8px 12px;}
-        .btn-done { background: #4facf7; color: white; padding: 6px 10px; font-size: 12px; margin: 0; width: auto; border-radius: 5px; }
-        
-        /* --- ZIELE FARBEN --- */
+        .btn-edit { background: #f1c40f; color: #1a1a2e; padding: 4px 8px; border-radius: 3px; cursor: pointer; width: auto; font-size: 12px; margin: 0;}
+        .delete-btn { background: #e94560; color: white; padding: 4px 8px; border-radius: 3px; cursor: pointer; width: auto; font-size: 12px; margin: 0;}
+
+        /* --- ZIELE & LINKS --- */
         .priority-high { border-left: 5px solid #e94560; }
         .priority-medium { border-left: 5px solid #f1c40f; }
         .priority-low { border-left: 5px solid #4facf7; }
-
-        /* --- QUICK LINKS --- */
         .links-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .quick-link-btn { 
-            background: #1a4a85; color: white; text-decoration: none; padding: 6px 10px; 
-            border-radius: 6px; font-size: 12px; border: 1px solid #4facf7;
-        }
+        .quick-link-btn { background: #1a4a85; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #4facf7; }
 
-        /* --- LISTEN --- */
-        ul { list-style-type: none; padding: 0; margin: 0; }
-        li {
-            background: #0f3460; padding: 8px 12px; border-radius: 5px; margin-bottom: 6px;
-            display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px;
-        }
-        .delete-btn { background: #e94560; color: white; border: none; padding: 3px 7px; border-radius: 3px; cursor: pointer; width: auto; margin: 0; }
+        /* --- GRAPHEN (3 nebeneinander) --- */
+        .graphs-wrapper { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .chart-container { background: white; border-radius: 10px; padding: 10px; min-height: 150px; }
+        .blur-effect { filter: blur(10px); opacity: 0.4; pointer-events: none; }
 
-        /* --- GRAPHEN & BLUR --- */
-        .chart-container { background: white; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-        .blur-effect { filter: blur(8px); opacity: 0.5; pointer-events: none; transition: 0.3s ease; user-select: none; }
-        .goal-box { width: 16px; height: 16px; border-radius: 4px; }
+        /* --- WETTER --- */
+        .hourly-container { display: flex; overflow-x: auto; gap: 25px; padding-bottom: 10px; }
+        .hourly-item { text-align: center; min-width: 45px; font-size: 11px; }
 
-        /* --- WETTER (Optimiert) --- */
-        .hourly-container { display: flex; overflow-x: auto; gap: 25px; /* Größere Abstände hier */ padding-bottom: 10px; }
-        .hourly-item { text-align: center; min-width: 50px; font-size: 11px; }
-        .daily-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+        /* --- MODALS --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 3000; }
+        .modal-content { background: #16213e; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; border: 1px solid #4ecca3; max-height: 85vh; overflow-y: auto; }
+        ul { list-style: none; padding: 0; }
+        li { background: #0f3460; padding: 10px; border-radius: 5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* --- MODAL FIX (Wichtig für das Problem im Bild) --- */
-        .modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 3000; 
-        }
-        .modal-content { 
-            background: #16213e; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; 
-            border: 1px solid #4ecca3; box-shadow: 0 0 50px rgba(0,0,0,1);
-            max-height: 85vh; overflow-y: auto;
-        }
-
-        @media (max-width: 1100px) {
+        @media (max-width: 1200px) {
             .dashboard-grid { grid-template-columns: 1fr; }
-            #dashboard { max-width: 500px; }
+            .graphs-wrapper { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
     <script>
-        // HIER DEINEN SHA-256 HASH EINTRAGEN!
         const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
     </script>
 
     <div id="login-screen">
-        <h2 style="color: white;">Bitte PIN eingeben</h2>
+        <h2 style="color: white;">Dashboard PIN</h2>
         <input type="password" id="pin-input" class="pin-input" maxlength="6">
-        <button onclick="checkPIN()" style="width: auto;">Entsperren</button>
+        <button onclick="checkPIN()" style="width: auto; padding: 15px 30px;">Entsperren</button>
         <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Falscher PIN!</p>
     </div>
 
     <div id="dashboard">
         <div class="header-bar card">
-            <div>
-                <div id="time">00:00:00</div>
-                <div id="date">Lädt...</div>
-            </div>
-            <div>
-                <button class="btn-sync" onclick="openModal('cloud-modal')">☁️ GitHub Sync</button>
-                <small id="sync-status" style="color: #a0a0a0; display: block; text-align: right; margin-top: 5px;">Offline</small>
+            <div><div id="time">00:00:00</div><div id="date">Datum...</div></div>
+            <div style="text-align: right;">
+                <button class="btn-sync" onclick="openModal('cloud-modal')" style="background:#e94560; color:white; width:auto;">☁️ GitHub Sync</button>
+                <small id="sync-status" style="display:block; margin-top:5px; color:#a0a0a0;">Lokal</small>
             </div>
         </div>
 
@@ -139,37 +101,26 @@
             <div class="col-left">
                 <div class="card">
                     <h2>🎯 Ziele</h2>
-                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                        <input type="text" id="goal-item-input" placeholder="Ziel..." style="flex: 2;">
-                        <select id="goal-priority" style="flex: 1.2; font-size: 11px;">
-                            <option value="priority-low">Niedrig</option>
-                            <option value="priority-medium">Mittel</option>
-                            <option value="priority-high">Hoch</option>
-                        </select>
-                        <button onclick="addGoalItem()" style="margin: 0; width: auto;">+</button>
+                    <div style="display:flex; gap:5px; margin-bottom:10px;">
+                        <input type="text" id="goal-item-input" placeholder="Ziel..." style="flex:2;">
+                        <select id="goal-priority" style="flex:1;"><option value="priority-low">Niedrig</option><option value="priority-medium">Mittel</option><option value="priority-high">Hoch</option></select>
+                        <button onclick="addGoalItem()" style="width:auto; margin:0;">+</button>
                     </div>
                     <ul id="goals-item-list"></ul>
                 </div>
 
                 <div class="card">
                     <h2>🌤️ Wetter</h2>
-                    <div style="display: flex; gap: 4px; margin-bottom: 10px;">
-                        <input type="text" id="city-input" placeholder="Stadt...">
-                        <button onclick="searchWeather()" style="width: auto; margin: 0;">Suchen</button>
-                    </div>
+                    <div style="display:flex; gap:5px; margin-bottom:15px;"><input type="text" id="city-input" placeholder="Stadt..."><button onclick="searchWeather()" style="width:auto; margin:0;">Go</button></div>
                     <div class="hourly-container" id="hourly-forecast"></div>
-                    <div id="daily-forecast" style="margin-top: 10px;"></div>
+                    <div id="daily-forecast" style="margin-top:15px; border-top:1px solid #0f3460; padding-top:10px;"></div>
                 </div>
 
                 <div class="card">
                     <h2>🔗 Quick Links</h2>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="text" id="link-name" placeholder="Name">
-                        <input type="text" id="link-url" placeholder="URL">
-                        <button onclick="addQuickLink()" style="width: auto; margin: 0;">+</button>
-                    </div>
+                    <div style="display:flex; gap:5px;"><input type="text" id="link-name" placeholder="Name"><input type="text" id="link-url" placeholder="URL"><button onclick="addQuickLink()" style="width:auto; margin:0;">+</button></div>
                     <div id="quick-links-list" class="links-container"></div>
-                    <button class="btn-secondary" onclick="openModal('manage-link-modal')" style="font-size: 10px; padding: 5px; margin-top: 15px;">⚙️ Verwalten</button>
+                    <button class="btn-secondary" onclick="openModal('manage-link-modal')" style="font-size:11px; margin-top:15px;">⚙️ Verwalten</button>
                 </div>
             </div>
 
@@ -178,29 +129,31 @@
                     <h2>🏃 Gesundheit</h2>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <input type="date" id="health-date">
-                        <select id="health-type">
-                            <option value="">Kein Sport</option>
-                            <option value="Kardio">🏃 Kardio</option>
-                            <option value="Kraft">🏋️ Kraft</option>
-                            <option value="Beides">🔥 Beides</option>
-                        </select>
-                        <input type="number" id="health-weight" placeholder="kg" step="0.1">
+                        <select id="health-type"><option value="">Kein Sport</option><option value="Kardio">🏃 Kardio</option><option value="Kraft">🏋️ Kraft</option><option value="Beides">🔥 Beides</option></select>
+                        <input type="number" id="health-weight" placeholder="Gewicht (kg)" step="0.1">
                         <input type="number" id="health-steps" placeholder="Schritte">
                     </div>
                     <button onclick="addHealthData()">Eintragen</button>
-                    <button class="btn-secondary" onclick="openModal('manage-health-modal')">⚙️ Daten verwalten</button>
+                    <button class="btn-secondary" onclick="openModal('manage-health-modal')">⚙️ Daten bearbeiten</button>
 
-                    <div style="background: #1a1a2e; padding: 12px; border-radius: 10px; margin: 15px 0; border: 1px solid #4ecca3; display: flex; justify-content: space-around;">
-                        <div><span style="font-size:12px;">🏃 Kardio</span><div id="cardio-boxes" style="display:flex; gap:4px; margin-top:5px;"></div></div>
-                        <div><span style="font-size:12px;">🏋️ Kraft</span><div id="strength-boxes" style="display:flex; gap:4px; margin-top:5px;"></div></div>
+                    <div style="background: #1a1a2e; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #4ecca3; display: flex; justify-content: space-around;">
+                        <div><span>🏃 Kardio</span><div id="cardio-boxes" style="display:flex; gap:5px; margin-top:5px;"></div></div>
+                        <div><span>🏋️ Kraft</span><div id="strength-boxes" style="display:flex; gap:5px; margin-top:5px;"></div></div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <button id="toggle-weight-btn" onclick="toggleWeightBlur()" style="width: auto; padding: 4px 8px; font-size: 10px; background: #9b59b6;">👁️ Gewicht</button>
-                        <button onclick="toggleGraphView()" style="width: auto; padding: 4px 8px; font-size: 10px;">Alle anzeigen</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                        <h2>Verlauf</h2>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="toggle-weight-btn" onclick="toggleWeightBlur()" style="width: auto; padding: 5px 12px; font-size: 11px; background: #9b59b6;">👁️ Zeigen</button>
+                            <button id="toggle-range-btn" onclick="toggleGraphRange()" style="width: auto; padding: 5px 12px; font-size: 11px;">10 Tage</button>
+                        </div>
                     </div>
-                    <div class="chart-container"><canvas id="weightChart" class="blur-effect" height="110"></canvas></div>
-                    <div class="chart-container"><canvas id="stepsChart" height="110"></canvas></div>
+                    
+                    <div class="graphs-wrapper">
+                        <div class="chart-container"><canvas id="weightChart" class="blur-effect"></canvas></div>
+                        <div class="chart-container"><canvas id="stepsChart"></canvas></div>
+                        <div class="chart-container"><canvas id="calChart"></canvas></div>
+                    </div>
                 </div>
             </div>
 
@@ -208,11 +161,7 @@
                 <div class="card" id="overdue-card"><h2 style="color: #e94560;">🚨 Wichtig</h2><ul id="overdue-list"></ul></div>
                 <div class="card">
                     <h2>📝 To-Do</h2>
-                    <div style="display: flex; gap: 4px;">
-                        <input type="text" id="todo-input" placeholder="Aufgabe..." style="flex: 2;">
-                        <input type="date" id="todo-date" style="flex: 1;">
-                        <button onclick="addTodo()" style="width: auto; margin: 0;">+</button>
-                    </div>
+                    <div style="display: flex; gap: 4px;"><input type="text" id="todo-input" placeholder="Aufgabe..."><button onclick="addTodo()" style="width: auto; margin:0;">+</button></div>
                     <ul id="todo-list" style="margin-top: 10px;"></ul>
                 </div>
                 <div class="card">
@@ -228,19 +177,19 @@
                     <button class="btn-secondary" onclick="openModal('manage-modal')">⚙️ Verwalten</button>
                 </div>
             </div>
-        </div> 
+        </div>
     </div>
 
-    <div id="cloud-modal" class="modal"><div class="modal-content"><h2>☁️ GitHub Setup</h2><label>Gist ID:</label><input type="text" id="cloud-gist-id"><label>Token:</label><input type="password" id="cloud-github-token"><label>Passwort:</label><input type="password" id="cloud-password"><button onclick="saveCloudConfigAndPull()">Speichern</button><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="manage-link-modal" class="modal"><div class="modal-content"><h2>Links verwalten</h2><ul id="all-links-list"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="manage-routine-modal" class="modal"><div class="modal-content"><h2>Routinen</h2><ul id="all-routine-list"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="manage-health-modal" class="modal"><div class="modal-content"><h2>Gesundheit</h2><ul id="all-health-list"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="manage-modal" class="modal"><div class="modal-content"><h2>Geburtstage</h2><ul id="all-bday-list"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="add-routine-modal" class="modal"><div class="modal-content"><h2>Routine Neu</h2><input type="text" id="r-name" placeholder="Was?"><input type="date" id="r-date"><select id="r-int"><option value="1">1 Monat</option><option value="3">3 Monate</option><option value="6">6 Monate</option><option value="12">1 Jahr</option><option value="24">2 Jahre</option></select><button onclick="addRoutine()">OK</button><button class="btn-secondary" onclick="closeModals()">Abbrechen</button></div></div>
-    <div id="add-modal" class="modal"><div class="modal-content"><h2>Geburtstag Neu</h2><input type="text" id="b-name" placeholder="Name"><input type="date" id="b-date"><button onclick="addBirthday()">OK</button><button class="btn-secondary" onclick="closeModals()">Abbrechen</button></div></div>
+    <div id="cloud-modal" class="modal"><div class="modal-content"><h2>☁️ Cloud Sync</h2><label>Gist ID:</label><input type="text" id="cloud-gist-id"><label>Token:</label><input type="password" id="cloud-github-token"><label>E2EE Passwort:</label><input type="password" id="cloud-password"><button onclick="saveCloudConfigAndPull()">Speichern</button><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
+    <div id="manage-link-modal" class="modal"><div class="modal-content"><h2>Links</h2><ul id="all-links-list"></ul><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
+    <div id="manage-routine-modal" class="modal"><div class="modal-content"><h2>Routinen</h2><ul id="all-routine-list"></ul><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
+    <div id="manage-health-modal" class="modal"><div class="modal-content"><h2>Gesundheit</h2><ul id="all-health-list"></ul><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
+    <div id="manage-modal" class="modal"><div class="modal-content"><h2>Geburtstage</h2><ul id="all-bday-list"></ul><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
+    <div id="add-routine-modal" class="modal"><div class="modal-content"><h2>Neu</h2><input type="text" id="r-name"><input type="date" id="r-date"><select id="r-int"><option value="1">1 Monat</option><option value="3">3 Monate</option><option value="6">6 Monate</option><option value="12">1 Jahr</option></select><button onclick="addRoutine()">OK</button><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
+    <div id="add-modal" class="modal"><div class="modal-content"><h2>Geburtstag</h2><input type="text" id="b-name"><input type="date" id="b-date"><button onclick="addBirthday()">OK</button><button class="btn-secondary" onclick="closeModals()">X</button></div></div>
 
     <script>
-        let birthdays = [], routines = [], todos = [], goalsList = [], healthData = [], quickLinks = [];
+        let birthdays=[], routines=[], todos=[], goalsList=[], healthData=[], quickLinks=[], showAllHistory=false;
         const CLOUD_CONFIG_KEY = "myGithubCloudConfig";
 
         function openModal(id) { document.getElementById(id).style.display = "flex"; }
@@ -263,12 +212,7 @@
 
         function renderAll() { renderTodos(); renderGoalsList(); renderRoutines(); renderBirthdays(); renderHealth(); renderQuickLinks(); }
 
-        /* CLOUD SYNC */
-        function saveCloudConfigAndPull() {
-            const gistId = document.getElementById('cloud-gist-id').value.trim(), githubToken = document.getElementById('cloud-github-token').value.trim(), password = document.getElementById('cloud-password').value.trim();
-            localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify({ gistId, githubToken, password }));
-            closeModals(); pullFromCloud();
-        }
+        /* --- SYNC --- */
         async function pushToCloud() {
             const config = JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)); if(!config) return;
             document.getElementById('sync-status').innerText = "☁️ Sende...";
@@ -292,17 +236,21 @@
                 renderAll(); document.getElementById('sync-status').innerText = "✅ Synchron";
             } catch(e) {}
         }
+        function saveCloudConfigAndPull() {
+            const gistId = document.getElementById('cloud-gist-id').value, githubToken = document.getElementById('cloud-github-token').value, password = document.getElementById('cloud-password').value;
+            localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify({ gistId, githubToken, password })); closeModals(); pullFromCloud();
+        }
 
-        /* FEATURES */
+        /* --- FEATURES --- */
         function addGoalItem() { const t=document.getElementById("goal-item-input").value, p=document.getElementById("goal-priority").value; if(t){goalsList.push({text:t,priority:p}); save("myGoalsList",goalsList); renderGoalsList(); document.getElementById("goal-item-input").value="";} }
         function renderGoalsList() { const l=document.getElementById("goals-item-list"); l.innerHTML=""; goalsList.forEach((g,i)=>l.innerHTML+=`<li class="${g.priority}"><span>${g.text}</span><button class="delete-btn" onclick="goalsList.splice(${i},1);save('myGoalsList',goalsList);renderGoalsList();">X</button></li>`); }
         
         function addQuickLink() { const n=document.getElementById("link-name").value, u=document.getElementById("link-url").value; if(n&&u){quickLinks.push({name:n, url:u.startsWith('http')?u:'https://'+u}); save("myQuickLinks",quickLinks); renderQuickLinks(); document.getElementById("link-name").value=""; document.getElementById("link-url").value="";} }
         function renderQuickLinks() { const c=document.getElementById("quick-links-list"); c.innerHTML=""; quickLinks.forEach(l=>c.innerHTML+=`<a href="${l.url}" target="_blank" class="quick-link-btn">${l.name}</a>`); }
-        function openLinkManageModal() { const l=document.getElementById("all-links-list"); l.innerHTML=""; quickLinks.forEach((x,i)=>l.innerHTML+=`<li><span>${x.name}</span><button class="delete-btn" onclick="quickLinks.splice(${i},1);save('myQuickLinks',quickLinks);renderQuickLinks();openModal('manage-link-modal');">🗑️</button></li>`); openModal('manage-link-modal'); }
+        function renderLinkManage() { const l=document.getElementById("all-links-list"); l.innerHTML=""; quickLinks.forEach((x,i)=>l.innerHTML+=`<li><span>${x.name}</span><button class="delete-btn" onclick="quickLinks.splice(${i},1);save('myQuickLinks',quickLinks);renderLinkManage();renderQuickLinks();">🗑️</button></li>`); }
 
-        function addTodo() { const t=document.getElementById("todo-input").value, d=document.getElementById("todo-date").value; if(t){todos.push({text:t,date:d}); save("myTodos",todos); renderTodos(); document.getElementById("todo-input").value="";} }
-        function renderTodos() { const l=document.getElementById("todo-list"); l.innerHTML=""; todos.forEach((t,i)=>l.innerHTML+=`<li><span>${t.text} <small>${t.date||''}</small></span><button class="delete-btn" onclick="todos.splice(${i},1);save('myTodos',todos);renderTodos();">X</button></li>`); }
+        function addTodo() { const t=document.getElementById("todo-input").value; if(t){todos.push({text:t}); save("myTodos",todos); renderTodos(); document.getElementById("todo-input").value="";} }
+        function renderTodos() { const l=document.getElementById("todo-list"); l.innerHTML=""; todos.forEach((t,i)=>l.innerHTML+=`<li><span>${t.text}</span><button class="delete-btn" onclick="todos.splice(${i},1);save('myTodos',todos);renderTodos();">X</button></li>`); }
 
         function addRoutine() { const n=document.getElementById("r-name").value, d=document.getElementById("r-date").value, i=parseInt(document.getElementById("r-int").value); if(n&&d){routines.push({name:n,date:d,interval:i}); save("myRoutines",routines); closeModals(); renderRoutines();}}
         function renderRoutines() {
@@ -318,32 +266,63 @@
         }
 
         function addBirthday() { const n=document.getElementById("b-name").value, d=document.getElementById("b-date").value; if(n&&d){birthdays.push({name:n,date:d}); save("myBirthdays",birthdays); closeModals(); renderBirthdays();}}
-        function renderBirthdays() { const l=document.getElementById("upcoming-bday-list"); l.innerHTML=""; birthdays.slice(0,3).forEach(b=>l.innerHTML+=`<li><span>${b.name} <small>${b.date}</small></span></li>`); }
+        function renderBirthdays() { const l=document.getElementById("upcoming-bday-list"); l.innerHTML=""; birthdays.slice(0,3).forEach(b=>l.innerHTML+=`<li><span><strong>${b.name}</strong> <small>${b.date}</small></span></li>`); }
 
         function addHealthData() {
             const date=document.getElementById("health-date").value, type=document.getElementById("health-type").value, weight=parseFloat(document.getElementById("health-weight").value), steps=parseInt(document.getElementById("health-steps").value);
             if(date){healthData.push({date,type,weight,steps}); save("myHealthData3",healthData); renderHealth();}
         }
 
-        let wChart, sChart, showAll=false, isBlurred=true;
-        function toggleWeightBlur() { isBlurred=!isBlurred; document.getElementById("weightChart").classList.toggle("blur-effect"); document.getElementById("toggle-weight-btn").innerText=isBlurred?"👁️ Gewicht":"🙈 Verstecken"; }
-        function toggleGraphView() { showAll=!showAll; renderHealth(); }
+        /* --- GRAPHEN --- */
+        let wChart, sChart, cChart, isBlurred=true;
+        function toggleWeightBlur() { isBlurred=!isBlurred; document.getElementById("weightChart").classList.toggle("blur-effect"); document.getElementById("toggle-weight-btn").innerText=isBlurred?"👁️ Zeigen":"🙈 Verstecken"; }
+        function toggleGraphRange() { showAllHistory = !showAllHistory; document.getElementById("toggle-range-btn").innerText = showAllHistory ? "Alle Zeit" : "10 Tage"; renderHealth(); }
+        
         function renderHealth() {
-            const data = showAll ? healthData : healthData.slice(-10);
-            const labels = data.map(d=>d.date.split('-').reverse().slice(0,2).join('.'));
-            if(wChart) wChart.destroy(); if(sChart) sChart.destroy();
-            const cfg = (l,d,c)=>({type:'line',data:{labels,datasets:[{label:l,data:d,borderColor:c,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
-            wChart = new Chart(document.getElementById('weightChart'), cfg('kg', data.map(d=>d.weight), '#ff6b6b'));
-            sChart = new Chart(document.getElementById('stepsChart'), cfg('Schritte', data.map(d=>d.steps), '#4facf7'));
+            const data = showAllHistory ? healthData.sort((a,b)=>new Date(a.date)-new Date(b.date)) : healthData.sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-10);
+            const labels = data.map(d=>d.date.split('-').slice(1).reverse().join('.'));
+            if(wChart) wChart.destroy(); if(sChart) sChart.destroy(); if(cChart) cChart.destroy();
+            const config = (l, d, c) => ({ type:'line', data:{ labels, datasets:[{label:l, data:d, borderColor:c, tension:0.3, pointRadius:2}] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:false}} } });
+            wChart = new Chart(document.getElementById('weightChart'), config('kg', data.map(d=>d.weight), '#ff6b6b'));
+            sChart = new Chart(document.getElementById('stepsChart'), config('Schritte', data.map(d=>d.steps), '#4facf7'));
+            cChart = new Chart(document.getElementById('calChart'), config('Sport', data.map(d=>d.type?1:0), '#4ecca3'));
             updateWeekly();
         }
+
         function updateWeekly() {
             const c=document.getElementById("cardio-boxes"), s=document.getElementById("strength-boxes"); c.innerHTML=""; s.innerHTML=""; let cc=0, sc=0;
             const week=new Date(); week.setDate(week.getDate()-7);
             healthData.forEach(d=>{ if(new Date(d.date)>week){if(d.type.includes('Kardio')||d.type==='Beides')cc++; if(d.type.includes('Kraft')||d.type==='Beides')sc++;}});
-            for(let i=0;i<3;i++) c.innerHTML+=`<div class="goal-box" style="background:${i<cc?'#f1c40f':'#2c3e50'}"></div>`;
-            for(let i=0;i<2;i++) s.innerHTML+=`<div class="goal-box" style="background:${i<sc?'#9b59b6':'#2c3e50'}"></div>`;
+            for(let i=0;i<3;i++) c.innerHTML+=`<div style="width:15px;height:15px;border-radius:4px;background:${i<cc?'#f1c40f':'#2c3e50'}"></div>`;
+            for(let i=0;i<2;i++) s.innerHTML+=`<div style="width:15px;height:15px;border-radius:4px;background:${i<sc?'#9b59b6':'#2c3e50'}"></div>`;
         }
+
+        /* --- VERWALTEN / EDITIEREN --- */
+        function openHealthManageModal() { 
+            const l=document.getElementById("all-health-list"); l.innerHTML=""; 
+            healthData.forEach((d,i) => {
+                l.innerHTML += `<li id="h-item-${i}"><span>${d.date}: ${d.weight||'-'}kg</span><div style="display:flex;gap:5px;"><button class="btn-edit" onclick="editHealth(${i})">✏️</button><button class="delete-btn" onclick="healthData.splice(${i},1);save('myHealthData3',healthData);openHealthManageModal();renderHealth();">🗑️</button></div></li>`;
+            }); openModal('manage-health-modal');
+        }
+        function editHealth(i) {
+            const d = healthData[i];
+            document.getElementById(`h-item-${i}`).innerHTML = `<input type="date" id="ed-h-d-${i}" value="${d.date}"><input type="number" id="ed-h-w-${i}" value="${d.weight}" step="0.1"><button onclick="saveH(${i})">💾</button>`;
+        }
+        function saveH(i) { healthData[i].date=document.getElementById(`ed-h-d-${i}`).value; healthData[i].weight=parseFloat(document.getElementById(`ed-h-w-${i}`).value); save('myHealthData3',healthData); openHealthManageModal(); renderHealth(); }
+
+        function renderManageRoutines() {
+            const l=document.getElementById("all-routine-list"); l.innerHTML="";
+            routines.forEach((r,i) => {
+                l.innerHTML += `<li id="r-item-${i}"><span>${r.name}</span><div style="display:flex;gap:5px;"><button class="btn-edit" onclick="editRoutine(${i})">✏️</button><button class="delete-btn" onclick="routines.splice(${i},1);save('myRoutines',routines);renderManageRoutines();renderRoutines();">🗑️</button></div></li>`;
+            });
+        }
+        function editRoutine(i) {
+            const r = routines[i];
+            document.getElementById(`r-item-${i}`).innerHTML = `<input type="text" id="ed-r-n-${i}" value="${r.name}"><button onclick="saveR(${i})">💾</button>`;
+        }
+        function saveR(i) { routines[i].name=document.getElementById(`ed-r-n-${i}`).value; save('myRoutines',routines); renderManageRoutines(); renderRoutines(); }
+
+        document.getElementById('manage-routine-modal').addEventListener('click', renderManageRoutines);
 
         function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); pushToCloud(); }
         
@@ -353,22 +332,16 @@
             try {
                 const g = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=de`)).json();
                 const { latitude, longitude } = g.results[0];
-                const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`)).json();
+                const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`)).json();
                 const hC = document.getElementById("hourly-forecast"); hC.innerHTML="";
-                const codes = { 0:"☀️", 1:"🌤️", 2:"⛅", 3:"☁️", 45:"🌫️", 51:"🌧️", 61:"🌧️", 71:"❄️", 80:"🌦️", 95:"⛈️" };
+                const codes = { 0:"☀️", 1:"🌤️", 2:"⛅", 3:"☁️", 45:"🌫️", 51:"🌧️", 71:"❄️", 95:"⛈️" };
                 for(let i=new Date().getHours(); i<new Date().getHours()+24; i+=3) hC.innerHTML+=`<div class="hourly-item"><div>${i%24}:00</div><div style="font-size:18px;">${codes[w.hourly.weathercode[i]]||"🌤️"}</div><div>${Math.round(w.hourly.temperature_2m[i])}°</div></div>`;
                 const dC = document.getElementById("daily-forecast"); dC.innerHTML="";
-                const days = ["So","Mo","Di","Mi","Do","Fr","Sa"];
                 for(let i=1; i<=5; i++) {
-                    const d = new Date(w.daily.time[i]);
-                    dC.innerHTML+=`<div class="daily-row"><span>${days[d.getDay()]}</span><span>${codes[w.daily.weathercode[i]]||"🌤️"}</span><span style="color:#4facf7;">${w.daily.precipitation_probability_max[i]}%</span><span>${Math.round(w.daily.temperature_2m_min[i])}°/${Math.round(w.daily.temperature_2m_max[i])}°</span></div>`;
+                    dC.innerHTML+=`<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #0f3460; font-size:12px;"><span>${new Date(w.daily.time[i]).toLocaleDateString('de-DE',{weekday:'short'})}</span><span>${codes[w.daily.weathercode[i]]||"🌤️"}</span><span>${Math.round(w.daily.temperature_2m_min[i])}°/${Math.round(w.daily.temperature_2m_max[i])}°</span></div>`;
                 }
             } catch(e) {}
         }
-
-        function openHealthManageModal() { const l=document.getElementById("all-health-list"); l.innerHTML=""; healthData.forEach((d,i)=>l.innerHTML+=`<li><span>${d.date}</span><button class="delete-btn" onclick="healthData.splice(${i},1);save('myHealthData3',healthData);openHealthManageModal();renderHealth();">🗑️</button></li>`); openModal('manage-health-modal'); }
-        function openRoutineManageModal() { const l=document.getElementById("all-routine-list"); l.innerHTML=""; routines.forEach((r,i)=>l.innerHTML+=`<li><span>${r.name}</span><button class="delete-btn" onclick="routines.splice(${i},1);save('myRoutines',routines);openRoutineManageModal();renderRoutines();">🗑️</button></li>`); openModal('manage-routine-modal'); }
-        function openManageModal() { const l=document.getElementById("all-bday-list"); l.innerHTML=""; birthdays.forEach((b,i)=>l.innerHTML+=`<li><span>${b.name}</span><button class="delete-btn" onclick="birthdays.splice(${i},1);save('myBirthdays',birthdays);openManageModal();renderBirthdays();">🗑️</button></li>`); openModal('manage-modal'); }
 
         setInterval(() => { const n=new Date(); document.getElementById("time").innerText=n.toLocaleTimeString('de-DE'); document.getElementById("date").innerText=n.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}); }, 1000);
         document.getElementById('health-date').valueAsDate = new Date();
