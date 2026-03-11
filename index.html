@@ -3,45 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine erste GitHub Website</title>
+    <title>Mein Info-Dashboard</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: white;
-            padding: 3rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        h1 { color: #2ea44f; }
-        p { font-size: 1.2rem; }
-        .badge {
-            display: inline-block;
-            background: #2ea44f;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1a1a2e; /* Dunkles Design */
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .card {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #0f3460;
+        }
+        h1 { color: #4ecca3; margin-bottom: 5px; }
+        .weather-img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            background: #4ecca3;
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 5px;
             text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
             margin-top: 20px;
         }
+        .btn:hover { background: #45b291; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🚀 Test bestanden!</h1>
-        <p>Deine Website wird erfolgreich über <strong>GitHub Pages</strong> gehostet.</p>
-        <p>Das war erst der Anfang. Jetzt kannst du anfangen zu coden!</p>
-        <a href="https://github.com/huemer-1/website" class="badge">Zurück zum Repository</a>
+    <div class="card">
+        <h1>Dashboard</h1>
+        <p>Willkommen auf deiner persönlichen Informations-Seite.</p>
+    </div>
+
+    <div class="card">
+        <h3>Aktuelles Wetter</h3>
+        <img class="weather-img" src="https://wttr.in/Berlin_3_white.png" alt="Wetter Daten">
+        <p><small>Daten von wttr.in</small></p>
+    </div>
+
+    <div class="card">
+        <h3>Heizungs-Steuerung (Vorschau)</h3>
+        <p>Status: <span style="color: #4ecca3;">Verbunden</span></p>
+        <p>Temperatur Wohnzimmer: <strong>21.5°C</strong></p>
+        <a href="#" class="btn">App öffnen</a>
     </div>
 
 </body>
