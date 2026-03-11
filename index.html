@@ -108,8 +108,8 @@
         const configSecurity = { authMode: "Base64", encodedKey: "MTIzNDU2", validate: function(input) { return btoa(input) === this.encodedKey; } };
     </script>
     <script>
-        // HIER DEINEN SHA-256 HASH VON "133722" EINTRAGEN!
-        const ECHTES_PASSWORT_HASH = "HIER_DEINEN_HASH_EINTRAGEN";
+        // HIER DEINEN BASE64 HASH VON "4124" EINTRAGEN!
+        const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
     </script>
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
@@ -729,3 +729,4 @@
     </script>
 </body>
 </html>
+
