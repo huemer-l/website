@@ -3,66 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Info-Dashboard</title>
+    <title>Mein Geheimes Dashboard</title>
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #1a1a2e; /* Dunkles Design */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
             color: white;
+            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .pin-input {
+            padding: 15px;
+            font-size: 20px;
+            text-align: center;
+            border-radius: 8px;
+            border: none;
+            letter-spacing: 5px;
+            margin-bottom: 15px;
+            width: 150px;
+        }
+
+        /* --- DASHBOARD --- */
+        #dashboard {
+            display: none; /* Ist vor dem Login unsichtbar */
+            width: 90%;
+            max-width: 600px;
             padding: 20px;
+            margin-top: 20px;
         }
         .card {
             background: #16213e;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
             margin-bottom: 20px;
             border: 1px solid #0f3460;
         }
-        h1 { color: #4ecca3; margin-bottom: 5px; }
-        .weather-img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 15px;
-        }
-        .btn {
-            background: #4ecca3;
-            color: #1a1a2e;
-            padding: 10px 20px;
+        h2 { color: #4ecca3; margin-top: 0; }
+        
+        /* --- UHR & DATUM --- */
+        #time { font-size: 45px; font-weight: bold; text-align: center; margin: 0; color: #4ecca3; }
+        #date { font-size: 18px; text-align: center; color: #a0a0a0; margin-bottom: 10px; }
+
+        /* --- GEBURTSTAGE --- */
+        input[type="text"], input[type="date"] {
+            padding: 10px;
+            margin: 5px 0;
             border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 20px;
+            border: none;
+            width: calc(100% - 20px);
+            box-sizing: border-box; /* Verhindert, dass Felder über den Rand ragen */
         }
-        .btn:hover { background: #45b291; }
+        button {
+            background: #4ecca3; color: #1a1a2e;
+            padding: 10px 20px; border: none; border-radius: 5px;
+            cursor: pointer; font-weight: bold; width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        button:hover { background: #45b291; }
+        ul { list-style-type: none; padding: 0; }
+        li {
+            background: #0f3460; padding: 12px; border-radius: 5px;
+            margin-bottom: 8px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background: #e94560; color: white; border: none; padding: 5px 10px;
+            border-radius: 3px; cursor: pointer; width: auto; margin: 0;
+        }
+        .delete-btn:hover { background: #c83b53; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Dashboard</h1>
-        <p>Willkommen auf deiner persönlichen Informations-Seite.</p>
+    <div id="login-screen">
+        <h2 style="color: white;">Bitte PIN eingeben</h2>
+        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
+        <button onclick="checkPIN()" style="width: auto;">Entsperren</button>
+        <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Falscher PIN!</p>
     </div>
 
-    <div class="card">
-        <h3>Aktuelles Wetter</h3>
-        <img class="weather-img" src="https://wttr.in/Berlin_3_white.png" alt="Wetter Daten">
-        <p><small>Daten von wttr.in</small></p>
+    <div id="dashboard">
+        
+        <div class="card">
+            <div id="time">00:00:00</div>
+            <div id="date">Datum lädt...</div>
+        </div>
+
+        <div class="card">
+            <h2>🎂 Geburtstage</h2>
+            <input type="text" id="bday-name" placeholder="Name (z.B. Max Mustermann)">
+            <input type="date" id="bday-date">
+            <button onclick="addBirthday()">Hinzufügen</button>
+            
+            <ul id="bday-list">
+                </ul>
+        </div>
+
     </div>
 
-    <div class="card">
-        <h3>Heizungs-Steuerung (Vorschau)</h3>
-        <p>Status: <span style="color: #4ecca3;">Verbunden</span></p>
-        <p>Temperatur Wohnzimmer: <strong>21.5°C</strong></p>
-        <a href="#" class="btn">App öffnen</a>
-    </div>
+    <script>
+        /* --- 1. PASSWORT LOGIK (SHA-256 Hashing) --- */
+        async function checkPIN() {
+            const enteredPIN = document.getElementById("pin-input").value;
+            
+            // HIER DEINEN EIGENEN HASH EINTRAGEN!
+            // Aktuell ist das der Hash für den PIN: 123456
+            const secretHash = "9379cbc32c4e60ed507ac62c85072066d170436b970be68c817f381c6faf17ac";
 
+            // Die Eingabe verschlüsseln
+            const encoder = new TextEncoder();
+            const data = encoder.encode(enteredPIN);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const enteredHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            // Hashes vergleichen
+            if (enteredHash === secretHash) {
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+                loadBirthdays(); // Lade Geburtstage erst, wenn eingeloggt
+            } else {
+                document.getElementById("error-msg").style.display = "block";
+                document.getElementById("pin-input").value = ""; // Feld nach falscher Eingabe leeren
+            }
+        }
+
+        // Erlaubt das Einloggen auch durch Drücken der "Enter"-Taste
+        document.getElementById("pin-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                checkPIN();
+            }
+        });
+
+        /* --- 2. UHRZEIT & DATUM --- */
+        function updateClock() {
+            const now = new Date();
+            // Uhrzeit
+            document.getElementById("time").innerText = now.toLocaleTimeString('de-DE');
+            // Datum 
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById("date").innerText = now.toLocaleDateString('de-DE', options);
+        }
+        setInterval(updateClock, 1000); // Aktualisiert jede Sekunde
+        updateClock(); // Einmal sofort starten
+
+        /* --- 3. GEBURTSTAGE SPEICHERN & LADEN --- */
+        let birthdays = [];
+
+        function addBirthday() {
+            const name = document.getElementById("bday-name").value;
+            const date = document.getElementById("bday-date").value;
+
+            if (name === "" || date === "") {
+                alert("Bitte gib einen Namen und ein Datum ein!");
+                return;
+            }
+
+            // Neues Format bauen (z.B. "04.08.")
+            const dateObj = new Date(date);
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            const formattedDate = dateObj.toLocaleDateString('de-DE', options);
+
+            // Zum Array hinzufügen und im Browser speichern
+            birthdays.push({ name: name, date: formattedDate });
+            localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
+            
+            // Felder leeren und Liste neu laden
+            document.getElementById("bday-name").value = "";
+            document.getElementById("bday-date").value = "";
+            renderList();
+        }
+
+        function loadBirthdays() {
+            const saved = localStorage.getItem("myBirthdays");
+            if (saved) {
+                birthdays = JSON.parse(saved);
+            }
+            renderList();
+        }
+
+        function deleteBirthday(index) {
+            birthdays.splice(index, 1); // Löscht den Eintrag
+            localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById("bday-list");
+            list.innerHTML = ""; // Liste einmal leeren
+            
+            birthdays.forEach((bday, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = `<span><strong>${bday.name}</strong> <br><small style="color: #a0a0a0;">${bday.date}</small></span> 
+                                <button class="delete-btn" onclick="deleteBirthday(${index})">X</button>`;
+                list.appendChild(li);
+            });
+        }
+    </script>
 </body>
 </html>
