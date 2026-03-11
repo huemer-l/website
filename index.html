@@ -26,14 +26,8 @@
         }
 
         /* --- DASHBOARD LAYOUT (GRID) --- */
-        #dashboard { 
-            display: none; width: 95%; max-width: 1200px; /* Breiter gemacht für Nebeneinander */
-            padding: 20px; margin-top: 10px; 
-        }
-        .dashboard-grid {
-            display: grid; grid-template-columns: 2fr 1fr; /* Links 2/3, Rechts 1/3 */
-            gap: 20px; align-items: start;
-        }
+        #dashboard { display: none; width: 95%; max-width: 1200px; padding: 20px; margin-top: 10px; }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
 
         /* --- KARTEN DESIGN --- */
         .card {
@@ -41,6 +35,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460;
             margin-bottom: 20px;
         }
+        /* Extra Design für die Wichtig-Box */
+        #overdue-card { border: 2px solid #e94560; background: #231520; display: none; }
+        
         h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 22px; }
         
         /* --- UHR & DATUM --- */
@@ -60,31 +57,26 @@
         button:hover { background: #45b291; }
         .btn-secondary { background: #0f3460; color: white; }
         .btn-secondary:hover { background: #1a4a85; }
+        
+        /* Grüner Button für Routinen */
+        .btn-done { background: #2ecc71; color: white; padding: 8px 12px; font-size: 14px; margin: 0; width: auto; border-radius: 8px;}
+        .btn-done:hover { background: #27ae60; }
 
         /* --- LISTEN & TO-DOS --- */
         ul { list-style-type: none; padding: 0; margin: 0; }
         li {
             background: #0f3460; padding: 12px; border-radius: 5px; margin-bottom: 8px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
         }
-        .delete-btn {
-            background: #e94560; color: white; border: none; padding: 5px 10px;
-            border-radius: 3px; cursor: pointer; width: auto; margin: 0;
-        }
+        .delete-btn { background: #e94560; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: auto; margin: 0; }
         .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer;}
         .todo-item.done span { text-decoration: line-through; color: #a0a0a0; }
         .todo-checkbox { transform: scale(1.5); margin-right: 10px; cursor: pointer;}
         .time-badge { background: #4ecca3; color: #1a1a2e; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-left: 10px; white-space: nowrap; }
 
         /* --- POPUPS (Modals) --- */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
-        }
-        .modal-content {
-            background: #16213e; padding: 25px; border-radius: 15px;
-            width: 90%; max-width: 450px; border: 1px solid #4ecca3;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #16213e; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; border: 1px solid #4ecca3; }
 
         /* --- WETTER --- */
         .weather-search { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -96,12 +88,12 @@
         .hourly-item .temp { font-weight: bold; font-size: 18px; margin-top: 5px; }
         .hourly-item .rain { font-size: 12px; color: #4facf7; margin-top: 3px; }
         
-        /* --- GESUNDHEIT GRAPHEN --- */
+        /* --- GESUNDHEIT GRAPHEN & BOXEN --- */
         .graphs-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 10px; }
         .chart-container { background: white; border-radius: 10px; padding: 10px; }
         .legend-text { text-align: center; font-size: 12px; color: #a0a0a0; margin-bottom: 15px; }
+        .goal-box { width: 22px; height: 22px; border-radius: 5px; display: inline-block; transition: all 0.3s; }
 
-        /* Responsive Design für Handys */
         @media (max-width: 900px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .graphs-wrapper { grid-template-columns: 1fr; }
@@ -111,12 +103,14 @@
 <body>
 
     <script>
-        const configSecurity = {
-            authMode: "Base64",
-            encodedKey: "MTIzNDU2",
-            validate: function(input) { return btoa(input) === this.encodedKey; }
-        };
+        const configSecurity = { authMode: "Base64", encodedKey: "MTIzNDU2", validate: function(input) { return btoa(input) === this.encodedKey; } };
     </script>
+
+    <script>
+        // HIER DEINEN BASE64 HASH VON "1234" EINTRAGEN!
+        const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
+    </script>
+    
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
         <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
@@ -167,14 +161,46 @@
                         <button class="btn-secondary" onclick="openHealthManageModal()">Verwalten</button>
                     </div>
                     
+                    <h4 style="margin: 25px 0 10px 0;">Deine Ziele & Referenzlinien</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #0f3460; padding: 15px; border-radius: 10px;">
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Ziel Schritte (Graph-Linie):</label>
+                            <input type="number" id="goal-steps" value="10000" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Ziel Kalorien (Graph-Linie):</label>
+                            <input type="number" id="goal-cal" value="2300" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Kardio pro Woche:</label>
+                            <input type="number" id="goal-cardio" value="3" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Kraft pro Woche:</label>
+                            <input type="number" id="goal-strength" value="2" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                    </div>
+
+                    <div style="background: #1a1a2e; border: 1px solid #4ecca3; padding: 15px; border-radius: 10px; margin-bottom: 25px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #4ecca3;">Dein Training der letzten 7 Tage</h4>
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div style="flex: 1;">
+                                <div style="margin-bottom: 8px; font-weight: bold; font-size: 14px;">🏃 Kardio</div>
+                                <div id="cardio-boxes" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="margin-bottom: 8px; font-weight: bold; font-size: 14px;">🏋️ Kraft</div>
+                                <div id="strength-boxes" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 5px 0;">
                         <h4 style="margin: 0;">Dein Verlauf</h4>
                         <button id="toggle-view-btn" class="btn-secondary" onclick="toggleGraphView()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px;">Alle anzeigen</button>
                     </div>
-                    
-                    <div class="legend-text">
-                        Punkt-Farben: 🟡 Kardio | 🟣 Kraft | 🔴 Beides | ⚪ Kein Sport
-                    </div>
+
+                    <div class="legend-text">Punkte: 🟡 Kardio | 🟣 Kraft | 🔴 Beides | ⚪ Kein Sport</div>
                     
                     <div class="graphs-wrapper">
                         <div class="chart-container"><canvas id="weightChart" style="max-height: 150px;"></canvas></div>
@@ -183,16 +209,33 @@
                     </div>
                 </div>
 
-            </div> <div class="col-sidebar">
+            </div>
+
+            <div class="col-sidebar">
                 
+                <div class="card" id="overdue-card">
+                    <h2 style="color: #e94560;">🚨 Wichtig & Überfällig</h2>
+                    <ul id="overdue-list">
+                        </ul>
+                </div>
+
                 <div class="card">
                     <h2>📝 To-Do Liste</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px;">
                         <input type="text" id="todo-input" placeholder="Aufgabe..." style="margin: 0; flex: 2;">
-                        <input type="text" id="todo-time" placeholder="Zeit (2h)" style="margin: 0; flex: 1;">
+                        <input type="date" id="todo-date" style="margin: 0; flex: 1;">
                         <button onclick="addTodo()" style="margin: 0; width: auto;">+</button>
                     </div>
                     <ul id="todo-list"></ul>
+                </div>
+
+                <div class="card">
+                    <h2>🔄 Anstehende Routinen</h2>
+                    <ul id="upcoming-routines-list" style="margin-bottom: 15px;"></ul>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openRoutineAddModal()">+ Hinzufügen</button>
+                        <button class="btn-secondary" onclick="openRoutineManageModal()">Verwalten</button>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -204,7 +247,38 @@
                     </div>
                 </div>
 
-            </div> </div> </div> <div id="add-modal" class="modal">
+            </div>
+
+        </div> 
+    </div>
+
+    <div id="add-routine-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0;">Neue Routine</h2>
+            <input type="text" id="routine-name" placeholder="Was ist zu tun? (z.B. Fenster putzen)">
+            <label style="font-size:12px; color:#a0a0a0; margin-left: 5px;">Wann hast du das zuletzt gemacht?</label>
+            <input type="date" id="routine-date">
+            <label style="font-size:12px; color:#a0a0a0; margin-left: 5px;">Wie oft muss das gemacht werden?</label>
+            <select id="routine-interval">
+                <option value="1">Jeden Monat</option>
+                <option value="3">Alle 3 Monate</option>
+                <option value="6">Alle 6 Monate (Halbjährlich)</option>
+                <option value="12">Alle 12 Monate (Jährlich)</option>
+            </select>
+            <button onclick="addRoutine()">Speichern</button>
+            <button style="background: #e94560;" onclick="closeModals()">Abbrechen</button>
+        </div>
+    </div>
+    
+    <div id="manage-routine-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0;">Routinen Verwalten</h2>
+            <ul id="all-routine-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0;">Neuer Geburtstag</h2>
             <input type="text" id="bday-name" placeholder="Name">
@@ -213,7 +287,6 @@
             <button style="background: #e94560;" onclick="closeModals()">Abbrechen</button>
         </div>
     </div>
-    
     <div id="manage-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0;">Alle Geburtstage</h2>
@@ -234,9 +307,7 @@
         /* --- 1. ECHTE PASSWORT LOGIK --- */
         async function checkPIN() {
             const enteredPIN = document.getElementById("pin-input").value;
-            
-            // WICHTIG: HIER DEIN Paswort (123456) MIT https://www.base64encode.org/ EINTRAGEN!
-            const secretHash = "9379cbc32c4e60ed507ac62c85072066d170436b970be68c817f381c6faf17ac";
+            const secretHash = ECHTES_PASSWORT_HASH; // Wird ganz oben im Script gezogen
 
             const encoder = new TextEncoder();
             const data = encoder.encode(enteredPIN);
@@ -246,8 +317,9 @@
 
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
-                document.getElementById("dashboard").style.display = "block"; // Startet das Layout
-                loadBirthdays(); loadSavedWeather(); loadTodos(); loadHealthData();
+                document.getElementById("dashboard").style.display = "block";
+                
+                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData();
             } else {
                 document.getElementById("error-msg").style.display = "block";
                 document.getElementById("pin-input").value = ""; 
@@ -267,10 +339,10 @@
         let todos = [];
         function addTodo() {
             const input = document.getElementById("todo-input"); 
-            const timeInput = document.getElementById("todo-time");
+            const dateInput = document.getElementById("todo-date");
             if(input.value.trim() === "") return;
-            todos.push({ text: input.value, time: timeInput.value.trim(), done: false }); 
-            input.value = ""; timeInput.value = ""; saveTodos();
+            todos.push({ text: input.value, date: dateInput.value, done: false }); 
+            input.value = ""; dateInput.value = ""; saveTodos();
         }
         function toggleTodo(index) { todos[index].done = !todos[index].done; saveTodos(); }
         function deleteTodo(index) { todos.splice(index, 1); saveTodos(); }
@@ -280,7 +352,11 @@
             const list = document.getElementById("todo-list"); list.innerHTML = "";
             todos.forEach((todo, index) => {
                 const checked = todo.done ? "checked" : ""; const doneClass = todo.done ? "done" : "";
-                const timeBadgeHtml = todo.time ? `<span class="time-badge">${todo.time}</span>` : "";
+                let timeBadgeHtml = "";
+                if (todo.date) {
+                    const d = new Date(todo.date);
+                    timeBadgeHtml = `<span class="time-badge">bis ${d.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'})}</span>`;
+                }
                 list.innerHTML += `<li class="${doneClass}">
                     <div class="todo-item" onclick="toggleTodo(${index})">
                         <input type="checkbox" class="todo-checkbox" ${checked} onclick="event.stopPropagation()">
@@ -291,7 +367,108 @@
             });
         }
 
-        /* --- 4. GESUNDHEIT & TRAINING (Komplett Liniengraphen) --- */
+        /* --- 4. ROUTINEN (MIT WICHTIG-FUNKTION) --- */
+        let routines = [];
+        
+        function getNextRoutineInfo(routine) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const lastDate = new Date(routine.date);
+            const nextDate = new Date(lastDate);
+            nextDate.setMonth(nextDate.getMonth() + routine.interval); 
+            const diffDays = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+            return { diffDays, dateObj: nextDate };
+        }
+
+        function addRoutine() {
+            const name = document.getElementById("routine-name").value; 
+            const date = document.getElementById("routine-date").value;
+            const interval = parseInt(document.getElementById("routine-interval").value);
+            if (!name || !date) return alert("Bitte Name und letztes Datum eingeben!");
+            
+            routines.push({ name: name, date: date, interval: interval }); 
+            localStorage.setItem("myRoutines", JSON.stringify(routines));
+            
+            document.getElementById("routine-name").value = ""; document.getElementById("routine-date").value = ""; 
+            closeModals(); loadRoutines();
+        }
+
+        // Abhaken: Setzt das Datum auf heute und rechnet neu
+        function markRoutineDone(index) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            // Da wir in verschiedenen Listen rendern, brauchen wir den originalen Index.
+            routines[index].date = todayStr; 
+            localStorage.setItem("myRoutines", JSON.stringify(routines));
+            loadRoutines();
+        }
+
+        function loadRoutines() {
+            const saved = localStorage.getItem("myRoutines"); if (saved) routines = JSON.parse(saved);
+            const upcomingList = document.getElementById("upcoming-routines-list");
+            const overdueList = document.getElementById("overdue-list");
+            const overdueCard = document.getElementById("overdue-card");
+            
+            upcomingList.innerHTML = ""; overdueList.innerHTML = "";
+            
+            if (routines.length === 0) {
+                upcomingList.innerHTML = "<p style='color:#a0a0a0; font-size:14px;'>Keine Routinen angelegt.</p>";
+                overdueCard.style.display = "none";
+                return;
+            }
+            
+            let overdueItems = [];
+            let upcomingItems = [];
+            
+            // Routinen analysieren und in 2 Listen aufteilen
+            routines.forEach((r, i) => {
+                const info = getNextRoutineInfo(r);
+                if (info.diffDays < 0) {
+                    overdueItems.push({ ...r, info, originalIndex: i });
+                } else {
+                    upcomingItems.push({ ...r, info, originalIndex: i });
+                }
+            });
+            
+            // 1. ÜBERFÄLLIGE ANZEIGEN (Die Wichtig-Box)
+            if (overdueItems.length > 0) {
+                overdueCard.style.display = "block";
+                overdueItems.sort((a, b) => a.info.diffDays - b.info.diffDays).forEach(r => {
+                    const lastDateStr = new Date(r.date).toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit', year:'numeric'});
+                    overdueList.innerHTML += `<li>
+                        <span><strong>${r.name}</strong><br><small style="color: #e94560;">Seit ${Math.abs(r.info.diffDays)} Tagen überfällig! (Zuletzt: ${lastDateStr})</small></span>
+                        <button class="btn-done" title="Heute erledigt!" onclick="markRoutineDone(${r.originalIndex})">✔️</button>
+                    </li>`;
+                });
+            } else {
+                overdueCard.style.display = "none";
+            }
+            
+            // 2. ANSTEHENDE ANZEIGEN (Normale Box, Max. 3 Stück)
+            if (upcomingItems.length > 0) {
+                upcomingItems.sort((a, b) => a.info.diffDays - b.info.diffDays).slice(0, 3).forEach(r => {
+                    const lastDateStr = new Date(r.date).toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit', year:'numeric'});
+                    let daysText = r.info.diffDays === 0 ? `<span style='color:#f1c40f; font-weight:bold;'>Heute fällig!</span>` : `in ${r.info.diffDays} Tagen`;
+                    upcomingList.innerHTML += `<li>
+                        <span><strong>${r.name}</strong><br><small style="color: #a0a0a0;">${daysText} (Zuletzt: ${lastDateStr})</small></span>
+                        <button class="btn-done" title="Heute erledigt!" onclick="markRoutineDone(${r.originalIndex})">✔️</button>
+                    </li>`;
+                });
+            } else {
+                upcomingList.innerHTML = "<p style='color:#a0a0a0; font-size:14px;'>Nichts anstehend.</p>";
+            }
+        }
+
+        function deleteRoutine(index) { routines.splice(index, 1); localStorage.setItem("myRoutines", JSON.stringify(routines)); loadRoutines(); renderManageRoutines(); }
+        function renderManageRoutines() {
+            const list = document.getElementById("all-routine-list"); list.innerHTML = "";
+            routines.forEach((r, index) => { 
+                list.innerHTML += `<li><span>${r.name} <small>(${r.interval} Mon.)</small></span> <button class="delete-btn" onclick="deleteRoutine(${index})">Löschen</button></li>`; 
+            });
+        }
+        function openRoutineAddModal() { document.getElementById("add-routine-modal").style.display = "flex"; }
+        function openRoutineManageModal() { renderManageRoutines(); document.getElementById("manage-routine-modal").style.display = "flex"; }
+
+        /* --- 5. GESUNDHEIT & TRAINING --- */
         let healthData = [];
         let weightChartInstance = null; let stepsChartInstance = null; let calChartInstance = null;
         let showAllGraphs = false; 
@@ -321,23 +498,14 @@
             loadHealthData();
         }
 
-        // NEU: Gesundheitsdaten verwalten (Löschen einzelner Einträge)
         function openHealthManageModal() {
             const list = document.getElementById("all-health-list"); list.innerHTML = "";
             let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date));
-            
             sortedData.forEach((d, index) => {
                 const dateObj = new Date(d.date);
-                const dateStr = dateObj.toLocaleDateString('de-DE');
-                const infoText = [
-                    d.type ? d.type : "",
-                    d.weight ? d.weight+"kg" : "",
-                    d.steps ? d.steps+" Schritte" : "",
-                    d.cal ? d.cal+" kcal" : ""
-                ].filter(Boolean).join(" | ");
-
+                const infoText = [ d.type, d.weight?d.weight+"kg":"", d.steps?d.steps+" Schr":"", d.cal?d.cal+" kcal":"" ].filter(Boolean).join(" | ");
                 list.innerHTML += `<li>
-                    <span><strong>${dateStr}</strong><br><small style="color:#a0a0a0;">${infoText}</small></span>
+                    <span><strong>${dateObj.toLocaleDateString('de-DE')}</strong><br><small style="color:#a0a0a0;">${infoText}</small></span>
                     <button class="delete-btn" onclick="deleteHealthData(${index})">Löschen</button>
                 </li>`;
             });
@@ -345,15 +513,69 @@
         }
 
         function deleteHealthData(index) {
-            healthData.splice(index, 1);
-            localStorage.setItem("myHealthData3", JSON.stringify(healthData));
-            loadHealthData(); openHealthManageModal(); // Aktualisiert die Liste sofort
+            healthData.splice(index, 1); localStorage.setItem("myHealthData3", JSON.stringify(healthData));
+            loadHealthData(); openHealthManageModal(); 
+        }
+
+        function saveGoals() {
+            localStorage.setItem("myGoals", JSON.stringify({
+                steps: document.getElementById('goal-steps').value,
+                cal: document.getElementById('goal-cal').value,
+                cardio: document.getElementById('goal-cardio').value,
+                strength: document.getElementById('goal-strength').value
+            }));
+            drawHealthCharts(); updateWeeklyBoxes();
+        }
+
+        function loadGoals() {
+            const saved = localStorage.getItem("myGoals");
+            if (saved) {
+                const goals = JSON.parse(saved);
+                document.getElementById('goal-steps').value = goals.steps || 10000;
+                document.getElementById('goal-cal').value = goals.cal || 2300;
+                document.getElementById('goal-cardio').value = goals.cardio !== undefined ? goals.cardio : 3;
+                document.getElementById('goal-strength').value = goals.strength !== undefined ? goals.strength : 2;
+            }
         }
 
         function loadHealthData() {
             const saved = localStorage.getItem("myHealthData3");
             if (saved) healthData = JSON.parse(saved);
-            drawHealthCharts();
+            drawHealthCharts(); updateWeeklyBoxes();
+        }
+
+        function updateWeeklyBoxes() {
+            const goalCardio = parseInt(document.getElementById('goal-cardio').value) || 3;
+            const goalStrength = parseInt(document.getElementById('goal-strength').value) || 2;
+
+            const sevenDaysAgo = new Date(); sevenDaysAgo.setHours(0,0,0,0); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            let countCardio = 0; let countStrength = 0;
+
+            healthData.forEach(d => {
+                const dDate = new Date(d.date);
+                if (dDate >= sevenDaysAgo) {
+                    if (d.type === "Kardio" || d.type === "Beides") countCardio++;
+                    if (d.type === "Kraft" || d.type === "Beides") countStrength++;
+                }
+            });
+
+            const cardioContainer = document.getElementById("cardio-boxes"); cardioContainer.innerHTML = "";
+            const cardioDisplayMax = Math.max(goalCardio, countCardio); 
+            for (let i = 0; i < cardioDisplayMax; i++) {
+                const isFilled = i < countCardio;
+                const bg = isFilled ? '#f1c40f' : 'transparent'; 
+                const border = isFilled ? '#f1c40f' : '#4ecca3';
+                cardioContainer.innerHTML += `<div class="goal-box" style="background: ${bg}; border: 2px solid ${border};"></div>`;
+            }
+
+            const strengthContainer = document.getElementById("strength-boxes"); strengthContainer.innerHTML = "";
+            const strengthDisplayMax = Math.max(goalStrength, countStrength);
+            for (let i = 0; i < strengthDisplayMax; i++) {
+                const isFilled = i < countStrength;
+                const bg = isFilled ? '#9b59b6' : 'transparent'; 
+                const border = isFilled ? '#9b59b6' : '#4ecca3';
+                strengthContainer.innerHTML += `<div class="goal-box" style="background: ${bg}; border: 2px solid ${border};"></div>`;
+            }
         }
 
         function toggleGraphView() {
@@ -368,51 +590,45 @@
 
             const labels = displayData.map(d => new Date(d.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }));
             
-            // Punkt-Farben basierend auf dem Training!
             const pointColors = displayData.map(d => {
-                if(d.type === "Kardio") return '#f1c40f'; // Gelb
-                if(d.type === "Kraft") return '#9b59b6'; // Lila
-                if(d.type === "Beides") return '#e74c3c'; // Rot
-                return '#ffffff'; // Weiß für kein Training
+                if(d.type === "Kardio") return '#f1c40f'; if(d.type === "Kraft") return '#9b59b6'; 
+                if(d.type === "Beides") return '#e74c3c'; return '#ffffff'; 
             });
-
-            // Punkt-Größe: Wenn Training, dann größer
             const pointRadii = displayData.map(d => (d.type && d.type !== "") ? 6 : 3);
 
             const weightData = displayData.map(d => d.weight);
             const stepsData = displayData.map(d => d.steps);
             const calData = displayData.map(d => d.cal);
 
-            // Alle Graphen sind jetzt LINIEN-Graphen ('line')
-            weightChartInstance = createChart('weightChart', weightChartInstance, labels, weightData, 'Gewicht (kg)', '#ff6b6b', pointColors, pointRadii);
-            stepsChartInstance = createChart('stepsChart', stepsChartInstance, labels, stepsData, 'Schritte', '#4facf7', pointColors, pointRadii);
-            calChartInstance = createChart('calChart', calChartInstance, labels, calData, 'Kalorien', '#4ecca3', pointColors, pointRadii);
+            const goalSteps = parseInt(document.getElementById('goal-steps').value) || 10000;
+            const goalCal = parseInt(document.getElementById('goal-cal').value) || 2300;
+
+            weightChartInstance = createChart('weightChart', weightChartInstance, labels, weightData, 'Gewicht (kg)', '#ff6b6b', pointColors, pointRadii, 180, null);
+            stepsChartInstance = createChart('stepsChart', stepsChartInstance, labels, stepsData, 'Schritte', '#4facf7', pointColors, pointRadii, null, goalSteps);
+            calChartInstance = createChart('calChart', calChartInstance, labels, calData, 'Kalorien', '#4ecca3', pointColors, pointRadii, null, goalCal);
         }
 
-        function createChart(canvasId, chartInstance, labels, data, labelName, lineColor, pointColors, pointRadii) {
+        function createChart(canvasId, chartInstance, labels, data, labelName, lineColor, pointColors, pointRadii, yMax, goalValue) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             if (chartInstance) chartInstance.destroy();
 
-            return new Chart(ctx, {
-                type: 'line', // Alle sind Liniengraphen
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: labelName, data: data, 
-                        borderColor: lineColor, 
-                        backgroundColor: lineColor,
-                        pointBackgroundColor: pointColors, // Individuelle Farben!
-                        pointBorderColor: '#16213e', // Dunkler Rand um die Punkte
-                        pointBorderWidth: 2,
-                        pointRadius: pointRadii, // Individuelle Größe!
-                        borderWidth: 2, tension: 0.3, spanGaps: true
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: true, labels: { boxWidth: 12 } } } }
-            });
+            const datasets = [{
+                label: labelName, data: data, borderColor: lineColor, backgroundColor: lineColor,
+                pointBackgroundColor: pointColors, pointBorderColor: '#16213e', pointBorderWidth: 2, pointRadius: pointRadii,
+                borderWidth: 2, tension: 0.3, spanGaps: true
+            }];
+
+            if (goalValue !== null) {
+                datasets.push({ label: 'Ziel', data: Array(labels.length).fill(goalValue), borderColor: '#e94560', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, tension: 0 });
+            }
+
+            const yOptions = { beginAtZero: true, min: 0 };
+            if (yMax !== null) yOptions.max = yMax; 
+
+            return new Chart(ctx, { type: 'line', data: { labels: labels, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, labels: { boxWidth: 12 } } }, scales: { y: yOptions } } });
         }
 
-        /* --- 5. WETTER & GEBURTSTAGE --- */
+        /* --- 6. WETTER & GEBURTSTAGE --- */
         function getWeatherEmoji(code) { if (code === 0) return "☀️"; if (code <= 2) return "⛅"; if (code === 3) return "☁️"; if (code >= 45 && code <= 48) return "🌫️"; if (code >= 51 && code <= 67) return "🌧️"; if (code >= 71 && code <= 77) return "❄️"; if (code >= 95) return "⛈️"; return "❓"; }
         function loadSavedWeather() { const savedCity = localStorage.getItem("myCity"); if (savedCity) { document.getElementById("city-input").value = savedCity; searchWeather(); } }
         async function searchWeather() {
@@ -456,7 +672,7 @@
         function loadBirthdays() {
             const saved = localStorage.getItem("myBirthdays"); if (saved) birthdays = JSON.parse(saved);
             const list = document.getElementById("upcoming-bday-list"); list.innerHTML = "";
-            if (birthdays.length === 0) return;
+            if (birthdays.length === 0) return list.innerHTML = "<p style='color:#a0a0a0; font-size:14px;'>Keine Geburtstage gespeichert.</p>";
             let sortedBdays = birthdays.map(b => ({ ...b, info: getNextBirthdayInfo(b.date) })).sort((a, b) => a.info.diffDays - b.info.diffDays).slice(0, 3);
             sortedBdays.forEach(b => {
                 const dateStr = b.info.dateObj.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'});
@@ -471,10 +687,12 @@
         }
         function openAddModal() { document.getElementById("add-modal").style.display = "flex"; }
         function openManageModal() { renderManageList(); document.getElementById("manage-modal").style.display = "flex"; }
+        
+        /* --- ALLE POPUPS SCHLIESSEN --- */
         function closeModals() { 
-            document.getElementById("add-modal").style.display = "none"; 
-            document.getElementById("manage-modal").style.display = "none"; 
-            document.getElementById("manage-health-modal").style.display = "none"; 
+            document.getElementById("add-modal").style.display = "none"; document.getElementById("manage-modal").style.display = "none"; 
+            document.getElementById("manage-health-modal").style.display = "none"; document.getElementById("add-routine-modal").style.display = "none";
+            document.getElementById("manage-routine-modal").style.display = "none";
         }
     </script>
 </body>
