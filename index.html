@@ -88,6 +88,15 @@
         .legend-text { text-align: center; font-size: 12px; color: #a0a0a0; margin-bottom: 15px; }
         .goal-box { width: 22px; height: 22px; border-radius: 5px; display: inline-block; transition: all 0.3s; }
 
+        /* --- NEU: PRIVATSPHÄRE FILTER --- */
+        .blur-effect {
+            filter: blur(8px);
+            opacity: 0.6;
+            pointer-events: none; /* Verhindert das Aufploppen der Werte beim Drüberfahren */
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
         @media (max-width: 900px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .graphs-wrapper { grid-template-columns: 1fr; }
@@ -103,8 +112,8 @@
     </script>
 
     <script>
-        // ECHTES PASSWORT HIER EINTRAGEN
-        // HIER DEINEN BASE64 HASH VON "4124" EINTRAGEN!
+        // PASSWORT HIER EINTRAGEN
+        // HIER DEINEN Base64 HASH VON "4124" EINTRAGEN!
         const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
     </script>
     
@@ -180,12 +189,15 @@
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 5px 0;">
                         <h4 style="margin: 0;">Dein Verlauf</h4>
-                        <button id="toggle-view-btn" class="btn-secondary" onclick="toggleGraphView()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px;">Alle anzeigen</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="toggle-weight-btn" class="btn-secondary" onclick="toggleWeightBlur()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px; background: #9b59b6;">👁️ Gewicht zeigen</button>
+                            <button id="toggle-view-btn" class="btn-secondary" onclick="toggleGraphView()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px;">Alle anzeigen</button>
+                        </div>
                     </div>
                     <div class="legend-text">Punkte: 🟡 Kardio | 🟣 Kraft | 🔴 Beides | ⚪ Kein Sport</div>
                     
                     <div class="graphs-wrapper">
-                        <div class="chart-container"><canvas id="weightChart" style="max-height: 150px;"></canvas></div>
+                        <div class="chart-container"><canvas id="weightChart" class="blur-effect" style="max-height: 150px;"></canvas></div>
                         <div class="chart-container"><canvas id="stepsChart" style="max-height: 150px;"></canvas></div>
                         <div class="chart-container"><canvas id="calChart" style="max-height: 150px;"></canvas></div>
                     </div>
@@ -244,16 +256,12 @@
         <div class="modal-content">
             <h2 style="margin-top: 0; color: #e94560;">☁️ GitHub Sync Setup</h2>
             <p style="font-size: 14px; color: #a0a0a0;">Verbinde das Dashboard sicher mit deinem geheimen GitHub Gist.</p>
-            
             <label style="font-size:12px; color:#4ecca3;">GitHub Gist ID:</label>
             <input type="text" id="cloud-gist-id" placeholder="z.B. 8a9b7c6d5e4f3...">
-            
             <label style="font-size:12px; color:#4ecca3;">GitHub Token (Classic):</label>
             <input type="password" id="cloud-github-token" placeholder="z.B. ghp_...">
-            
             <label style="font-size:12px; color:#e94560; margin-top: 10px; display:block; font-weight:bold;">Dein Verschlüsselungs-Passwort (E2EE):</label>
             <input type="password" id="cloud-password" placeholder="Passwort ausdenken...">
-            
             <button onclick="saveCloudConfigAndPull()">Speichern & Aus Cloud laden</button>
             <button class="btn-secondary" onclick="closeModals()">Abbrechen</button>
         </div>
@@ -279,7 +287,6 @@
             <button class="btn-secondary" onclick="closeModals()">Abbrechen</button>
         </div>
     </div>
-    
     <div id="manage-routine-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Routinen Verwalten</h2><ul id="all-routine-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
     <div id="add-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Neuer Geburtstag</h2><input type="text" id="bday-name" placeholder="Name"><input type="date" id="bday-date"><button onclick="addBirthday()">Speichern</button><button class="btn-secondary" onclick="closeModals()">Abbrechen</button></div></div>
     <div id="manage-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Alle Geburtstage</h2><ul id="all-bday-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
@@ -307,8 +314,7 @@
             if(!gistId || !githubToken || !password) return alert("Bitte alle 3 Felder ausfüllen!");
             
             localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify({ gistId, githubToken, password }));
-            closeModals();
-            pullFromCloud(); 
+            closeModals(); pullFromCloud(); 
         }
 
         async function pushToCloud() {
@@ -316,34 +322,19 @@
             if(!config || !config.gistId || !config.githubToken || !config.password) return; 
 
             document.getElementById('sync-status').innerText = "☁️ Sende an GitHub...";
-
-            const allData = {
-                birthdays: birthdays, routines: routines, todos: todos, healthData: healthData,
-                goals: JSON.parse(localStorage.getItem("myGoals") || "{}")
-            };
-
+            const allData = { birthdays: birthdays, routines: routines, todos: todos, healthData: healthData, goals: JSON.parse(localStorage.getItem("myGoals") || "{}") };
             const jsonStr = JSON.stringify(allData);
             const encryptedData = CryptoJS.AES.encrypt(jsonStr, config.password).toString();
 
             try {
                 const response = await fetch(`https://api.github.com/gists/${config.gistId}`, {
                     method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${config.githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        files: { 'dashboard.json': { content: encryptedData } }
-                    })
+                    headers: { 'Authorization': `Bearer ${config.githubToken}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: { 'dashboard.json': { content: encryptedData } } })
                 });
-                
                 if (!response.ok) throw new Error("GitHub API Fehler");
                 document.getElementById('sync-status').innerText = "✅ Cloud: Aktuell";
-            } catch(e) {
-                console.error(e);
-                document.getElementById('sync-status').innerText = "❌ Sync Fehler!";
-            }
+            } catch(e) { document.getElementById('sync-status').innerText = "❌ Sync Fehler!"; }
         }
 
         async function pullFromCloud() {
@@ -351,27 +342,17 @@
             if(!config || !config.gistId || !config.githubToken || !config.password) return;
 
             document.getElementById('sync-status').innerText = "☁️ Lade von GitHub...";
-
             try {
-                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${config.githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
+                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, { headers: { 'Authorization': `Bearer ${config.githubToken}`, 'Accept': 'application/vnd.github.v3+json' } });
                 if (!res.ok) throw new Error("Verbindungsfehler");
                 const json = await res.json();
                 
-                // Prüfen ob die Datei existiert und Inhalt hat
                 if(json.files && json.files['dashboard.json'] && json.files['dashboard.json'].content !== "{}") {
                     const encryptedData = json.files['dashboard.json'].content;
-                    
                     const decryptedBytes = CryptoJS.AES.decrypt(encryptedData, config.password);
                     const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
                     
                     if(!decryptedStr) throw new Error("Falsches Passwort!");
-                    
                     const parsedData = JSON.parse(decryptedStr);
 
                     if(parsedData.birthdays) { birthdays = parsedData.birthdays; localStorage.setItem("myBirthdays", JSON.stringify(birthdays)); }
@@ -382,16 +363,9 @@
 
                     loadBirthdays(); loadRoutines(); loadTodos(); loadGoals(); loadHealthData();
                     document.getElementById('sync-status').innerText = "✅ Cloud: Aktuell";
-                } else {
-                    document.getElementById('sync-status').innerText = "✅ Cloud leer / Initialisiert";
-                }
-            } catch(e) {
-                console.error(e);
-                alert("Fehler beim Cloud Download! Möglicherweise ist dein Verschlüsselungs-Passwort falsch oder der Token ist abgelaufen.");
-                document.getElementById('sync-status').innerText = "❌ Sync Fehler!";
-            }
+                } else { document.getElementById('sync-status').innerText = "✅ Cloud leer / Initialisiert"; }
+            } catch(e) { alert("Fehler! Passwort oder Token falsch."); document.getElementById('sync-status').innerText = "❌ Sync Fehler!"; }
         }
-
 
         /* --- 1. ECHTE PASSWORT LOGIK --- */
         async function checkPIN() {
@@ -411,8 +385,7 @@
                 loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData();
                 pullFromCloud();
             } else {
-                document.getElementById("error-msg").style.display = "block";
-                document.getElementById("pin-input").value = ""; 
+                document.getElementById("error-msg").style.display = "block"; document.getElementById("pin-input").value = ""; 
             }
         }
         document.getElementById("pin-input").addEventListener("keypress", e => { if (e.key === "Enter") checkPIN(); });
@@ -430,8 +403,7 @@
         function addTodo() {
             const input = document.getElementById("todo-input"); const dateInput = document.getElementById("todo-date");
             if(input.value.trim() === "") return;
-            todos.push({ text: input.value, date: dateInput.value }); 
-            input.value = ""; dateInput.value = ""; saveTodos();
+            todos.push({ text: input.value, date: dateInput.value }); input.value = ""; dateInput.value = ""; saveTodos();
         }
         function deleteTodo(index) { todos.splice(index, 1); saveTodos(); }
         function saveTodos() { localStorage.setItem("myTodos", JSON.stringify(todos)); loadTodos(); pushToCloud(); }
@@ -460,8 +432,7 @@
             document.getElementById("routine-name").value = ""; document.getElementById("routine-date").value = ""; closeModals(); loadRoutines(); pushToCloud();
         }
         function markRoutineDone(index) {
-            routines[index].date = new Date().toISOString().split('T')[0]; 
-            localStorage.setItem("myRoutines", JSON.stringify(routines)); loadRoutines(); pushToCloud();
+            routines[index].date = new Date().toISOString().split('T')[0]; localStorage.setItem("myRoutines", JSON.stringify(routines)); loadRoutines(); pushToCloud();
         }
         function loadRoutines() {
             const saved = localStorage.getItem("myRoutines"); if (saved) routines = JSON.parse(saved);
@@ -496,9 +467,31 @@
         function openRoutineAddModal() { document.getElementById("add-routine-modal").style.display = "flex"; }
         function openRoutineManageModal() { renderManageRoutines(); document.getElementById("manage-routine-modal").style.display = "flex"; }
 
-        /* --- 5. GESUNDHEIT & TRAINING --- */
-        let healthData = []; let weightChartInstance = null; let stepsChartInstance = null; let calChartInstance = null; let showAllGraphs = false; 
+        /* --- 5. GESUNDHEIT & TRAINING (MIT BLUR FUNKTION) --- */
+        let healthData = []; let weightChartInstance = null; let stepsChartInstance = null; let calChartInstance = null; 
+        let showAllGraphs = false; 
+        let isWeightBlurred = true; // Startet immer versteckt!
+        
         document.getElementById('health-date').valueAsDate = new Date();
+
+        function toggleWeightBlur() {
+            isWeightBlurred = !isWeightBlurred;
+            const btn = document.getElementById("toggle-weight-btn");
+            const canvas = document.getElementById("weightChart");
+            
+            if(isWeightBlurred) {
+                btn.innerText = "👁️ Gewicht zeigen";
+                canvas.classList.add("blur-effect");
+            } else {
+                btn.innerText = "🙈 Gewicht verstecken";
+                canvas.classList.remove("blur-effect");
+            }
+
+            // Falls das Verwalten-Fenster gerade offen ist, neu laden um die Werte dort auch scharf/unscharf zu machen
+            if(document.getElementById("manage-health-modal").style.display === "flex") {
+                openHealthManageModal();
+            }
+        }
 
         function addHealthData() {
             const date = document.getElementById("health-date").value; const type = document.getElementById("health-type").value; const weight = document.getElementById("health-weight").value; const steps = document.getElementById("health-steps").value; const cal = document.getElementById("health-cal").value;
@@ -508,15 +501,23 @@
             document.getElementById("health-type").value = ""; document.getElementById("health-weight").value = ""; document.getElementById("health-steps").value = ""; document.getElementById("health-cal").value = "";
             loadHealthData(); pushToCloud();
         }
+
         function openHealthManageModal() {
             const list = document.getElementById("all-health-list"); list.innerHTML = "";
             let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date));
             sortedData.forEach((d, index) => {
-                const infoText = [ d.type, d.weight?d.weight+"kg":"", d.steps?d.steps+" Schr":"", d.cal?d.cal+" kcal":"" ].filter(Boolean).join(" | ");
+                // Verschwommene Ansicht in der Liste!
+                let weightHTML = "";
+                if(d.weight) {
+                    weightHTML = `<span class="${isWeightBlurred ? 'blur-effect' : ''}">${d.weight}kg</span>`;
+                }
+
+                const infoText = [ d.type, weightHTML, d.steps?d.steps+" Schr":"", d.cal?d.cal+" kcal":"" ].filter(Boolean).join(" | ");
                 list.innerHTML += `<li><span><strong>${new Date(d.date).toLocaleDateString('de-DE')}</strong><br><small style="color:#a0a0a0;">${infoText}</small></span><button class="delete-btn" onclick="deleteHealthData(${index})">Löschen</button></li>`;
             });
             document.getElementById("manage-health-modal").style.display = "flex";
         }
+        
         function deleteHealthData(index) { healthData.splice(index, 1); localStorage.setItem("myHealthData3", JSON.stringify(healthData)); loadHealthData(); openHealthManageModal(); pushToCloud(); }
         function saveGoals() {
             localStorage.setItem("myGoals", JSON.stringify({ steps: document.getElementById('goal-steps').value, cal: document.getElementById('goal-cal').value, cardio: document.getElementById('goal-cardio').value, strength: document.getElementById('goal-strength').value }));
@@ -527,6 +528,7 @@
             if (saved) { const goals = JSON.parse(saved); document.getElementById('goal-steps').value = goals.steps || 10000; document.getElementById('goal-cal').value = goals.cal || 2300; document.getElementById('goal-cardio').value = goals.cardio !== undefined ? goals.cardio : 3; document.getElementById('goal-strength').value = goals.strength !== undefined ? goals.strength : 2; }
         }
         function loadHealthData() { const saved = localStorage.getItem("myHealthData3"); if (saved) healthData = JSON.parse(saved); drawHealthCharts(); updateWeeklyBoxes(); }
+        
         function updateWeeklyBoxes() {
             const goalCardio = parseInt(document.getElementById('goal-cardio').value) || 3; const goalStrength = parseInt(document.getElementById('goal-strength').value) || 2;
             const sevenDaysAgo = new Date(); sevenDaysAgo.setHours(0,0,0,0); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -538,7 +540,9 @@
             const strengthContainer = document.getElementById("strength-boxes"); strengthContainer.innerHTML = "";
             for (let i = 0; i < Math.max(goalStrength, countStrength); i++) { const isFilled = i < countStrength; strengthContainer.innerHTML += `<div class="goal-box" style="background: ${isFilled ? '#9b59b6' : 'transparent'}; border: 2px solid ${isFilled ? '#9b59b6' : '#4ecca3'};"></div>`; }
         }
+
         function toggleGraphView() { showAllGraphs = !showAllGraphs; document.getElementById("toggle-view-btn").innerText = showAllGraphs ? "Nur 10 anzeigen" : "Alle anzeigen"; drawHealthCharts(); }
+        
         function drawHealthCharts() {
             let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date)); let displayData = showAllGraphs ? sortedData : sortedData.slice(-10);
             const labels = displayData.map(d => new Date(d.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }));
@@ -551,6 +555,7 @@
             stepsChartInstance = createChart('stepsChart', stepsChartInstance, labels, stepsData, 'Schritte', '#4facf7', pointColors, pointRadii, null, goalSteps);
             calChartInstance = createChart('calChart', calChartInstance, labels, calData, 'Kalorien', '#4ecca3', pointColors, pointRadii, null, goalCal);
         }
+
         function createChart(canvasId, chartInstance, labels, data, labelName, lineColor, pointColors, pointRadii, yMax, goalValue) {
             const ctx = document.getElementById(canvasId).getContext('2d'); if (chartInstance) chartInstance.destroy();
             const datasets = [{ label: labelName, data: data, borderColor: lineColor, backgroundColor: lineColor, pointBackgroundColor: pointColors, pointBorderColor: '#16213e', pointBorderWidth: 2, pointRadius: pointRadii, borderWidth: 2, tension: 0.3, spanGaps: true }];
@@ -610,5 +615,3 @@
     </script>
 </body>
 </html>
-
-
