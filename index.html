@@ -104,13 +104,13 @@
 
     <script>
         // ECHTES PASSWORT HIER EINTRAGEN
-        // HIER DEINEN SHA-256 HASH VON "133722" EINTRAGEN!
+        // HIER DEINEN BASE64 HASH VON "4124" EINTRAGEN!
         const ECHTES_PASSWORT_HASH = "HIER_DEINEN_HASH_EINTRAGEN";
     </script>
     
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
-        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
+        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="****">
         <button onclick="checkPIN()" style="width: auto;">Entsperren</button>
         <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Falscher PIN!</p>
     </div>
@@ -610,3 +610,4 @@
     </script>
 </body>
 </html>
+
