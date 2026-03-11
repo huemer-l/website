@@ -7,87 +7,96 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a2e;
-            color: white;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background-color: #1a1a2e; color: white; margin: 0;
+            display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
         }
 
         /* --- LOGIN SCREEN --- */
         #login-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #1a1a2e;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #1a1a2e; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000;
         }
         .pin-input {
-            padding: 15px;
-            font-size: 20px;
-            text-align: center;
-            border-radius: 8px;
-            border: none;
-            letter-spacing: 5px;
-            margin-bottom: 15px;
-            width: 150px;
+            padding: 15px; font-size: 20px; text-align: center;
+            border-radius: 8px; border: none; letter-spacing: 5px;
+            margin-bottom: 15px; width: 150px;
         }
 
         /* --- DASHBOARD --- */
         #dashboard {
-            display: none; /* Ist vor dem Login unsichtbar */
-            width: 90%;
-            max-width: 600px;
-            padding: 20px;
-            margin-top: 20px;
+            display: none; width: 90%; max-width: 600px;
+            padding: 20px; margin-top: 20px;
         }
         .card {
-            background: #16213e;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            background: #16213e; border-radius: 15px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
             border: 1px solid #0f3460;
         }
-        h2 { color: #4ecca3; margin-top: 0; }
+        h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; }
         
         /* --- UHR & DATUM --- */
         #time { font-size: 45px; font-weight: bold; text-align: center; margin: 0; color: #4ecca3; }
         #date { font-size: 18px; text-align: center; color: #a0a0a0; margin-bottom: 10px; }
 
-        /* --- GEBURTSTAGE --- */
-        input[type="text"], input[type="date"] {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            border: none;
-            width: calc(100% - 20px);
-            box-sizing: border-box; /* Verhindert, dass Felder über den Rand ragen */
+        /* --- ALLGEMEINE INPUTS & BUTTONS --- */
+        input[type="text"], input[type="date"], input[type="password"] {
+            padding: 10px; margin: 5px 0; border-radius: 5px; border: none;
+            width: 100%; box-sizing: border-box; background: #fff; color: #333;
         }
         button {
-            background: #4ecca3; color: #1a1a2e;
-            padding: 10px 20px; border: none; border-radius: 5px;
-            cursor: pointer; font-weight: bold; width: 100%;
-            margin-top: 10px;
-            font-size: 16px;
+            background: #4ecca3; color: #1a1a2e; padding: 10px 20px;
+            border: none; border-radius: 5px; cursor: pointer;
+            font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px;
         }
         button:hover { background: #45b291; }
-        ul { list-style-type: none; padding: 0; }
+        .btn-secondary { background: #0f3460; color: white; }
+        .btn-secondary:hover { background: #1a4a85; }
+
+        /* --- LISTEN --- */
+        ul { list-style-type: none; padding: 0; margin: 0; }
         li {
-            background: #0f3460; padding: 12px; border-radius: 5px;
-            margin-bottom: 8px; display: flex; justify-content: space-between;
-            align-items: center;
+            background: #0f3460; padding: 12px; border-radius: 5px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .delete-btn {
             background: #e94560; color: white; border: none; padding: 5px 10px;
             border-radius: 3px; cursor: pointer; width: auto; margin: 0;
         }
-        .delete-btn:hover { background: #c83b53; }
+
+        /* --- POPUP MODAL (Versteckte Fenster) --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-content {
+            background: #16213e; padding: 25px; border-radius: 15px;
+            width: 90%; max-width: 400px; border: 1px solid #4ecca3;
+        }
+
+        /* --- WETTER WIDGET --- */
+        .weather-search { display: flex; gap: 10px; margin-bottom: 15px; }
+        .weather-search input { margin: 0; }
+        .weather-search button { margin: 0; width: auto; }
+        
+        .hourly-container {
+            display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px;
+            border-bottom: 1px solid #0f3460; margin-bottom: 15px;
+        }
+        .hourly-item {
+            background: #0f3460; padding: 10px; border-radius: 10px;
+            text-align: center; min-width: 60px;
+        }
+        .hourly-item .time { font-size: 12px; color: #a0a0a0; }
+        .hourly-item .temp { font-weight: bold; font-size: 18px; }
+        .hourly-item .icon { font-size: 24px; margin: 5px 0; }
+        
+        .daily-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .daily-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -107,115 +116,263 @@
         </div>
 
         <div class="card">
-            <h2>🎂 Geburtstage</h2>
-            <input type="text" id="bday-name" placeholder="Name (z.B. Max Mustermann)">
-            <input type="date" id="bday-date">
-            <button onclick="addBirthday()">Hinzufügen</button>
-            
-            <ul id="bday-list">
+            <h2>🌤️ Wetter</h2>
+            <div class="weather-search">
+                <input type="text" id="city-input" placeholder="Stadt (z.B. Wien)">
+                <button onclick="searchWeather()">Suchen</button>
+            </div>
+            <h4 style="margin: 10px 0 5px 0;">Heute</h4>
+            <div class="hourly-container" id="hourly-forecast"></div>
+            <h4 style="margin: 10px 0 5px 0;">Nächste 7 Tage</h4>
+            <div id="daily-forecast"></div>
+        </div>
+
+        <div class="card">
+            <h2>🎂 Nächste Geburtstage</h2>
+            <ul id="upcoming-bday-list" style="margin-bottom: 15px;">
                 </ul>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="openAddModal()">+ Hinzufügen</button>
+                <button class="btn-secondary" onclick="openManageModal()">Verwalten</button>
+            </div>
         </div>
 
     </div>
 
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0;">Neuer Geburtstag</h2>
+            <input type="text" id="bday-name" placeholder="Name (z.B. Anna)">
+            <input type="date" id="bday-date">
+            <button onclick="addBirthday()">Speichern</button>
+            <button style="background: #e94560;" onclick="closeModals()">Abbrechen</button>
+        </div>
+    </div>
+
+    <div id="manage-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0;">Alle Geburtstage</h2>
+            <ul id="all-bday-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                </ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
+
     <script>
-        /* --- 1. PASSWORT LOGIK (SHA-256 Hashing) --- */
+        /* --- 1. PASSWORT LOGIK --- */
         async function checkPIN() {
             const enteredPIN = document.getElementById("pin-input").value;
-            
-            // HIER DEINEN EIGENEN HASH EINTRAGEN!
-            // Aktuell ist das der Hash für den PIN: 123456
-            const secretHash = "9379cbc32c4e60ed507ac62c85072066d170436b970be68c817f381c6faf17ac";
+            // ACHTUNG: Hier deinen eigenen Hash einfügen! (Aktuell: 123456)
+            const secretHash = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
-            // Die Eingabe verschlüsseln
             const encoder = new TextEncoder();
             const data = encoder.encode(enteredPIN);
             const hashBuffer = await crypto.subtle.digest('SHA-256', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const enteredHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-            // Hashes vergleichen
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
-                loadBirthdays(); // Lade Geburtstage erst, wenn eingeloggt
+                loadBirthdays(); 
+                loadSavedWeather();
             } else {
                 document.getElementById("error-msg").style.display = "block";
-                document.getElementById("pin-input").value = ""; // Feld nach falscher Eingabe leeren
+                document.getElementById("pin-input").value = ""; 
             }
         }
 
-        // Erlaubt das Einloggen auch durch Drücken der "Enter"-Taste
         document.getElementById("pin-input").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                checkPIN();
-            }
+            if (event.key === "Enter") { event.preventDefault(); checkPIN(); }
         });
 
         /* --- 2. UHRZEIT & DATUM --- */
         function updateClock() {
             const now = new Date();
-            // Uhrzeit
             document.getElementById("time").innerText = now.toLocaleTimeString('de-DE');
-            // Datum 
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById("date").innerText = now.toLocaleDateString('de-DE', options);
+            document.getElementById("date").innerText = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
-        setInterval(updateClock, 1000); // Aktualisiert jede Sekunde
-        updateClock(); // Einmal sofort starten
+        setInterval(updateClock, 1000); updateClock();
 
-        /* --- 3. GEBURTSTAGE SPEICHERN & LADEN --- */
+        /* --- 3. WETTER --- */
+        function getWeatherEmoji(code) {
+            if (code === 0) return "☀️"; if (code <= 2) return "⛅"; if (code === 3) return "☁️";
+            if (code >= 45 && code <= 48) return "🌫️"; if (code >= 51 && code <= 67) return "🌧️";
+            if (code >= 71 && code <= 77) return "❄️"; if (code >= 95) return "⛈️"; return "❓";
+        }
+
+        function loadSavedWeather() {
+            const savedCity = localStorage.getItem("myCity");
+            if (savedCity) { document.getElementById("city-input").value = savedCity; searchWeather(); }
+        }
+
+        async function searchWeather() {
+            const city = document.getElementById("city-input").value;
+            if (!city) return;
+            localStorage.setItem("myCity", city);
+
+            try {
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=de`);
+                const geoData = await geoRes.json();
+                if (!geoData.results) return alert("Stadt nicht gefunden!");
+                
+                const { latitude, longitude } = geoData.results[0];
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`);
+                const weatherData = await weatherRes.json();
+
+                renderHourlyWeather(weatherData.hourly);
+                renderDailyWeather(weatherData.daily);
+            } catch (error) { console.error("Wetterfehler:", error); }
+        }
+
+        function renderHourlyWeather(hourlyData) {
+            const container = document.getElementById("hourly-forecast"); container.innerHTML = "";
+            const currentHourIndex = new Date().getHours();
+            for (let i = currentHourIndex; i < currentHourIndex + 24; i += 3) {
+                container.innerHTML += `<div class="hourly-item">
+                    <div class="time">${new Date(hourlyData.time[i]).getHours()}:00</div>
+                    <div class="icon">${getWeatherEmoji(hourlyData.weathercode[i])}</div>
+                    <div class="temp">${Math.round(hourlyData.temperature_2m[i])}°</div>
+                </div>`;
+            }
+        }
+
+        function renderDailyWeather(dailyData) {
+            const container = document.getElementById("daily-forecast"); container.innerHTML = "";
+            const tage = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+            for (let i = 1; i <= 6; i++) {
+                const dateObj = new Date(dailyData.time[i]);
+                container.innerHTML += `<div class="daily-item">
+                    <div style="width: 100px; font-weight: bold;">${tage[dateObj.getDay()]}, ${dateObj.getDate()}.${dateObj.getMonth() + 1}.</div>
+                    <div style="font-size: 20px;">${getWeatherEmoji(dailyData.weathercode[i])}</div>
+                    <div style="color:#a0a0a0; font-size: 14px;">Min: ${Math.round(dailyData.temperature_2m_min[i])}° | Max: <span style="color:white; font-weight:bold;">${Math.round(dailyData.temperature_2m_max[i])}°</span></div>
+                </div>`;
+            }
+        }
+
+        /* --- 4. GEBURTSTAGE (NEU LOGIK) --- */
         let birthdays = [];
+
+        // Berechnet, wie viele Tage es noch bis zum nächsten Geburtstag sind
+        function getNextBirthdayInfo(dateString) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            // Datum zerlegen (unterstützt das alte Format dd.mm.yyyy und das neue yyyy-mm-dd)
+            let day, month, year;
+            if (dateString.includes('-')) {
+                const parts = dateString.split('-');
+                year = parseInt(parts[0]); month = parseInt(parts[1]) - 1; day = parseInt(parts[2]);
+            } else {
+                const parts = dateString.split('.');
+                day = parseInt(parts[0]); month = parseInt(parts[1]) - 1; year = parseInt(parts[2]);
+            }
+
+            // Nächsten Geburtstag in diesem Jahr ansetzen
+            let nextBday = new Date(today.getFullYear(), month, day);
+            
+            // Wenn der Geburtstag dieses Jahr schon war, setze ihn aufs nächste Jahr
+            if (nextBday < today) {
+                nextBday.setFullYear(today.getFullYear() + 1);
+            }
+
+            // Tage ausrechnen
+            const diffTime = nextBday - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // Alter ausrechnen
+            const ageTurn = nextBday.getFullYear() - year;
+
+            return { diffDays, dateObj: nextBday, ageTurn };
+        }
 
         function addBirthday() {
             const name = document.getElementById("bday-name").value;
-            const date = document.getElementById("bday-date").value;
+            const date = document.getElementById("bday-date").value; // Format: yyyy-mm-dd
+            if (!name || !date) return alert("Bitte Name und Datum eingeben!");
 
-            if (name === "" || date === "") {
-                alert("Bitte gib einen Namen und ein Datum ein!");
-                return;
-            }
-
-            // Neues Format bauen (z.B. "04.08.")
-            const dateObj = new Date(date);
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            const formattedDate = dateObj.toLocaleDateString('de-DE', options);
-
-            // Zum Array hinzufügen und im Browser speichern
-            birthdays.push({ name: name, date: formattedDate });
+            birthdays.push({ name: name, date: date });
             localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
             
-            // Felder leeren und Liste neu laden
             document.getElementById("bday-name").value = "";
             document.getElementById("bday-date").value = "";
-            renderList();
+            closeModals();
+            renderDashboardBirthdays();
         }
 
         function loadBirthdays() {
             const saved = localStorage.getItem("myBirthdays");
-            if (saved) {
-                birthdays = JSON.parse(saved);
-            }
-            renderList();
+            if (saved) birthdays = JSON.parse(saved);
+            renderDashboardBirthdays();
         }
 
         function deleteBirthday(index) {
-            birthdays.splice(index, 1); // Löscht den Eintrag
+            birthdays.splice(index, 1);
             localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
-            renderList();
+            renderManageList(); // Aktualisiert die Verwalten-Liste
+            renderDashboardBirthdays(); // Aktualisiert das Dashboard
         }
 
-        function renderList() {
-            const list = document.getElementById("bday-list");
-            list.innerHTML = ""; // Liste einmal leeren
-            
-            birthdays.forEach((bday, index) => {
-                const li = document.createElement("li");
-                li.innerHTML = `<span><strong>${bday.name}</strong> <br><small style="color: #a0a0a0;">${bday.date}</small></span> 
-                                <button class="delete-btn" onclick="deleteBirthday(${index})">X</button>`;
-                list.appendChild(li);
+        // Zeigt nur die Top 3 auf dem Dashboard
+        function renderDashboardBirthdays() {
+            const list = document.getElementById("upcoming-bday-list");
+            list.innerHTML = "";
+
+            if (birthdays.length === 0) {
+                list.innerHTML = "<p style='color:#a0a0a0'>Keine Geburtstage gespeichert.</p>";
+                return;
+            }
+
+            // Jeden Geburtstag analysieren und sortieren
+            let sortedBdays = birthdays.map(b => {
+                const info = getNextBirthdayInfo(b.date);
+                return { ...b, info };
             });
+
+            // Sortieren nach wenigsten Tagen
+            sortedBdays.sort((a, b) => a.info.diffDays - b.info.diffDays);
+
+            // Nur die ersten 3 nehmen
+            const top3 = sortedBdays.slice(0, 3);
+
+            top3.forEach(b => {
+                const dateStr = b.info.dateObj.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'});
+                let daysText = "";
+                if (b.info.diffDays === 0) daysText = "<span style='color:#4ecca3;'>Heute! 🎉</span>";
+                else if (b.info.diffDays === 1) daysText = "Morgen";
+                else daysText = `in ${b.info.diffDays} Tagen`;
+
+                list.innerHTML += `<li>
+                    <span><strong>${b.name}</strong> (wird ${b.info.ageTurn})<br>
+                    <small style="color: #a0a0a0;">am ${dateStr} - ${daysText}</small></span>
+                </li>`;
+            });
+        }
+
+        // Zeigt alle Geburtstage im Verwalten-Fenster
+        function renderManageList() {
+            const list = document.getElementById("all-bday-list");
+            list.innerHTML = "";
+            birthdays.forEach((b, index) => {
+                // Konvertiere das Datum für die Anzeige schön
+                const d = new Date(b.date);
+                const showDate = isNaN(d) ? b.date : d.toLocaleDateString('de-DE');
+                list.innerHTML += `<li>
+                    <span>${b.name} <small>(${showDate})</small></span>
+                    <button class="delete-btn" onclick="deleteBirthday(${index})">Löschen</button>
+                </li>`;
+            });
+        }
+
+        /* --- POPUP STEUERUNG --- */
+        function openAddModal() { document.getElementById("add-modal").style.display = "flex"; }
+        function openManageModal() { 
+            renderManageList(); 
+            document.getElementById("manage-modal").style.display = "flex"; 
+        }
+        function closeModals() {
+            document.getElementById("add-modal").style.display = "none";
+            document.getElementById("manage-modal").style.display = "none";
         }
     </script>
 </body>
