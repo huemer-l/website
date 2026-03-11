@@ -25,12 +25,21 @@
             margin-bottom: 15px; width: 150px;
         }
 
-        /* --- DASHBOARD --- */
-        #dashboard { display: none; width: 90%; max-width: 600px; padding: 20px; margin-top: 10px; }
+        /* --- DASHBOARD LAYOUT (GRID) --- */
+        #dashboard { 
+            display: none; width: 95%; max-width: 1200px; /* Breiter gemacht für Nebeneinander */
+            padding: 20px; margin-top: 10px; 
+        }
+        .dashboard-grid {
+            display: grid; grid-template-columns: 2fr 1fr; /* Links 2/3, Rechts 1/3 */
+            gap: 20px; align-items: start;
+        }
+
+        /* --- KARTEN DESIGN --- */
         .card {
             background: #16213e; border-radius: 15px; padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
-            border: 1px solid #0f3460;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460;
+            margin-bottom: 20px;
         }
         h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 22px; }
         
@@ -65,6 +74,7 @@
         .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer;}
         .todo-item.done span { text-decoration: line-through; color: #a0a0a0; }
         .todo-checkbox { transform: scale(1.5); margin-right: 10px; cursor: pointer;}
+        .time-badge { background: #4ecca3; color: #1a1a2e; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-left: 10px; white-space: nowrap; }
 
         /* --- POPUPS (Modals) --- */
         .modal {
@@ -73,33 +83,40 @@
         }
         .modal-content {
             background: #16213e; padding: 25px; border-radius: 15px;
-            width: 90%; max-width: 400px; border: 1px solid #4ecca3;
+            width: 90%; max-width: 450px; border: 1px solid #4ecca3;
         }
 
         /* --- WETTER --- */
         .weather-search { display: flex; gap: 10px; margin-bottom: 15px; }
         .weather-search input { margin: 0; }
         .weather-search button { margin: 0; width: auto; }
-        .hourly-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; border-bottom: 1px solid #0f3460; margin-bottom: 15px; }
+        .hourly-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; border-bottom: 1px solid #0f3460; }
         .hourly-item { background: #0f3460; padding: 10px; border-radius: 10px; text-align: center; min-width: 65px; }
         .hourly-item .time { font-size: 12px; color: #a0a0a0; }
         .hourly-item .temp { font-weight: bold; font-size: 18px; margin-top: 5px; }
         .hourly-item .rain { font-size: 12px; color: #4facf7; margin-top: 3px; }
-
-        /* --- KALENDER --- */
-        .calendar-header { text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 18px;}
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-        .cal-day-name { font-weight: bold; color: #4ecca3; font-size: 12px; padding-bottom: 5px;}
-        .cal-day { background: #0f3460; padding: 8px 0; border-radius: 5px; font-size: 14px; }
-        .cal-day.today { background: #e94560; font-weight: bold; color: white; }
-        .cal-day.empty { background: transparent; }
         
         /* --- GESUNDHEIT GRAPHEN --- */
-        .chart-container { background: white; border-radius: 10px; padding: 10px; margin-bottom: 15px; }
+        .graphs-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 10px; }
+        .chart-container { background: white; border-radius: 10px; padding: 10px; }
+        .legend-text { text-align: center; font-size: 12px; color: #a0a0a0; margin-bottom: 15px; }
+
+        /* Responsive Design für Handys */
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .graphs-wrapper { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
+    <script>
+        const configSecurity = {
+            authMode: "Base64",
+            encodedKey: "MTIzNDU2",
+            validate: function(input) { return btoa(input) === this.encodedKey; }
+        };
+    </script>
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
         <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
@@ -114,74 +131,80 @@
             <div id="date">Datum lädt...</div>
         </div>
 
-        <div class="card">
-            <h2>📅 Kalender</h2>
-            <div id="calendar-month" class="calendar-header">Monat lädt...</div>
-            <div class="calendar-grid" id="calendar-grid"></div>
-        </div>
-
-        <div class="card">
-            <h2>🌤️ Wetter</h2>
-            <div class="weather-search">
-                <input type="text" id="city-input" placeholder="Stadt (z.B. Wien)">
-                <button onclick="searchWeather()">Suchen</button>
-            </div>
-            <h4 style="margin: 10px 0 5px 0;">Heute</h4>
-            <div class="hourly-container" id="hourly-forecast"></div>
-        </div>
-
-        <div class="card">
-            <h2>📝 To-Do Liste</h2>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <input type="text" id="todo-input" placeholder="Neue Aufgabe..." style="margin: 0;">
-                <button onclick="addTodo()" style="margin: 0; width: auto;">+</button>
-            </div>
-            <ul id="todo-list"></ul>
-        </div>
-
-        <div class="card">
-            <h2>🏃 Gesundheit & Training</h2>
+        <div class="dashboard-grid">
             
-            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                <input type="date" id="health-date" style="margin:0; flex: 1;">
-                <select id="health-type" style="margin:0; flex: 1;">
-                    <option value="">Kein Training</option>
-                    <option value="Kardio">🏃 Kardio</option>
-                    <option value="Kraft">🏋️ Kraft</option>
-                    <option value="Beides">🔥 Beides</option>
-                </select>
-            </div>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input type="number" id="health-weight" placeholder="Gewicht (kg)" step="0.1" style="margin:0; flex: 1;">
-                <input type="number" id="health-steps" placeholder="Schritte" style="margin:0; flex: 1;">
-                <input type="number" id="health-cal" placeholder="Kalorien" style="margin:0; flex: 1;">
-            </div>
-            <button onclick="addHealthData()">Eintragen</button>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px 0;">
-                <h4 style="margin: 0;">Dein Verlauf</h4>
-                <button id="toggle-view-btn" class="btn-secondary" onclick="toggleGraphView()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px;">Alle anzeigen</button>
-            </div>
-            
-            <div class="chart-container"><canvas id="weightChart" style="max-height: 150px;"></canvas></div>
-            <div class="chart-container"><canvas id="stepsChart" style="max-height: 150px;"></canvas></div>
-            <div class="chart-container" style="margin-bottom: 0;"><canvas id="calChart" style="max-height: 150px;"></canvas></div>
-            
-            <button class="btn-secondary" onclick="clearHealthData()" style="margin-top: 15px; background: #e94560;">Verlauf löschen</button>
-        </div>
+            <div class="col-main">
+                
+                <div class="card">
+                    <h2>🌤️ Wetter</h2>
+                    <div class="weather-search">
+                        <input type="text" id="city-input" placeholder="Stadt (z.B. Wien)">
+                        <button onclick="searchWeather()">Suchen</button>
+                    </div>
+                    <h4 style="margin: 10px 0 5px 0;">Heute</h4>
+                    <div class="hourly-container" id="hourly-forecast"></div>
+                </div>
 
-        <div class="card">
-            <h2>🎂 Geburtstage</h2>
-            <ul id="upcoming-bday-list" style="margin-bottom: 15px;"></ul>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="openAddModal()">+ Hinzufügen</button>
-                <button class="btn-secondary" onclick="openManageModal()">Verwalten</button>
-            </div>
-        </div>
+                <div class="card">
+                    <h2>🏃 Gesundheit & Training</h2>
+                    
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <input type="date" id="health-date" style="margin:0; flex: 1;">
+                        <select id="health-type" style="margin:0; flex: 1;">
+                            <option value="">Kein Training</option>
+                            <option value="Kardio">🏃 Kardio</option>
+                            <option value="Kraft">🏋️ Kraft</option>
+                            <option value="Beides">🔥 Beides</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="number" id="health-weight" placeholder="Gewicht (kg)" step="0.1" style="margin:0; flex: 1;">
+                        <input type="number" id="health-steps" placeholder="Schritte" style="margin:0; flex: 1;">
+                        <input type="number" id="health-cal" placeholder="Kalorien" style="margin:0; flex: 1;">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="addHealthData()">Eintragen</button>
+                        <button class="btn-secondary" onclick="openHealthManageModal()">Verwalten</button>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 5px 0;">
+                        <h4 style="margin: 0;">Dein Verlauf</h4>
+                        <button id="toggle-view-btn" class="btn-secondary" onclick="toggleGraphView()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px;">Alle anzeigen</button>
+                    </div>
+                    
+                    <div class="legend-text">
+                        Punkt-Farben: 🟡 Kardio | 🟣 Kraft | 🔴 Beides | ⚪ Kein Sport
+                    </div>
+                    
+                    <div class="graphs-wrapper">
+                        <div class="chart-container"><canvas id="weightChart" style="max-height: 150px;"></canvas></div>
+                        <div class="chart-container"><canvas id="stepsChart" style="max-height: 150px;"></canvas></div>
+                        <div class="chart-container"><canvas id="calChart" style="max-height: 150px;"></canvas></div>
+                    </div>
+                </div>
 
-    </div>
+            </div> <div class="col-sidebar">
+                
+                <div class="card">
+                    <h2>📝 To-Do Liste</h2>
+                    <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                        <input type="text" id="todo-input" placeholder="Aufgabe..." style="margin: 0; flex: 2;">
+                        <input type="text" id="todo-time" placeholder="Zeit (2h)" style="margin: 0; flex: 1;">
+                        <button onclick="addTodo()" style="margin: 0; width: auto;">+</button>
+                    </div>
+                    <ul id="todo-list"></ul>
+                </div>
 
-    <div id="add-modal" class="modal">
+                <div class="card">
+                    <h2>🎂 Geburtstage</h2>
+                    <ul id="upcoming-bday-list" style="margin-bottom: 15px;"></ul>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openAddModal()">+ Hinzufügen</button>
+                        <button class="btn-secondary" onclick="openManageModal()">Verwalten</button>
+                    </div>
+                </div>
+
+            </div> </div> </div> <div id="add-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0;">Neuer Geburtstag</h2>
             <input type="text" id="bday-name" placeholder="Name">
@@ -190,6 +213,7 @@
             <button style="background: #e94560;" onclick="closeModals()">Abbrechen</button>
         </div>
     </div>
+    
     <div id="manage-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0;">Alle Geburtstage</h2>
@@ -198,11 +222,20 @@
         </div>
     </div>
 
+    <div id="manage-health-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0;">Gesundheit Verwalten</h2>
+            <ul id="all-health-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
+
     <script>
-        /* --- 1. PASSWORT LOGIK --- */
+        /* --- 1. ECHTE PASSWORT LOGIK --- */
         async function checkPIN() {
             const enteredPIN = document.getElementById("pin-input").value;
-            // ACHTUNG: Hier deinen eigenen Hash einfügen! (Aktuell: 123456)
+            
+            // WICHTIG: HIER DEIN Paswort (123456) MIT https://www.base64encode.org/ EINTRAGEN!
             const secretHash = "9379cbc32c4e60ed507ac62c85072066d170436b970be68c817f381c6faf17ac";
 
             const encoder = new TextEncoder();
@@ -213,8 +246,8 @@
 
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
-                document.getElementById("dashboard").style.display = "block";
-                loadBirthdays(); loadSavedWeather(); buildCalendar(); loadTodos(); loadHealthData();
+                document.getElementById("dashboard").style.display = "block"; // Startet das Layout
+                loadBirthdays(); loadSavedWeather(); loadTodos(); loadHealthData();
             } else {
                 document.getElementById("error-msg").style.display = "block";
                 document.getElementById("pin-input").value = ""; 
@@ -230,29 +263,14 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        /* --- 3. KALENDER BAUEN --- */
-        function buildCalendar() {
-            const now = new Date();
-            const month = now.getMonth(); const year = now.getFullYear(); const today = now.getDate();
-            const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
-            document.getElementById("calendar-month").innerText = `${monthNames[month]} ${year}`;
-            const grid = document.getElementById("calendar-grid"); grid.innerHTML = "";
-            const dayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-            dayNames.forEach(day => { grid.innerHTML += `<div class="cal-day-name">${day}</div>`; });
-            let firstDay = new Date(year, month, 1).getDay() - 1; if (firstDay === -1) firstDay = 6; 
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div class="cal-day empty"></div>`; }
-            for (let day = 1; day <= daysInMonth; day++) {
-                const isToday = (day === today) ? "today" : "";
-                grid.innerHTML += `<div class="cal-day ${isToday}">${day}</div>`;
-            }
-        }
-
-        /* --- 4. TO-DO LISTE --- */
+        /* --- 3. TO-DO LISTE --- */
         let todos = [];
         function addTodo() {
-            const input = document.getElementById("todo-input"); if(input.value.trim() === "") return;
-            todos.push({ text: input.value, done: false }); input.value = ""; saveTodos();
+            const input = document.getElementById("todo-input"); 
+            const timeInput = document.getElementById("todo-time");
+            if(input.value.trim() === "") return;
+            todos.push({ text: input.value, time: timeInput.value.trim(), done: false }); 
+            input.value = ""; timeInput.value = ""; saveTodos();
         }
         function toggleTodo(index) { todos[index].done = !todos[index].done; saveTodos(); }
         function deleteTodo(index) { todos.splice(index, 1); saveTodos(); }
@@ -262,14 +280,21 @@
             const list = document.getElementById("todo-list"); list.innerHTML = "";
             todos.forEach((todo, index) => {
                 const checked = todo.done ? "checked" : ""; const doneClass = todo.done ? "done" : "";
-                list.innerHTML += `<li class="${doneClass}"><div class="todo-item" onclick="toggleTodo(${index})"><input type="checkbox" class="todo-checkbox" ${checked} onclick="event.stopPropagation()"><span>${todo.text}</span></div><button class="delete-btn" onclick="deleteTodo(${index})">X</button></li>`;
+                const timeBadgeHtml = todo.time ? `<span class="time-badge">${todo.time}</span>` : "";
+                list.innerHTML += `<li class="${doneClass}">
+                    <div class="todo-item" onclick="toggleTodo(${index})">
+                        <input type="checkbox" class="todo-checkbox" ${checked} onclick="event.stopPropagation()">
+                        <span>${todo.text} ${timeBadgeHtml}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTodo(${index})">X</button>
+                </li>`;
             });
         }
 
-        /* --- 5. GESUNDHEIT & TRAINING --- */
+        /* --- 4. GESUNDHEIT & TRAINING (Komplett Liniengraphen) --- */
         let healthData = [];
         let weightChartInstance = null; let stepsChartInstance = null; let calChartInstance = null;
-        let showAllGraphs = false; // Steuert, ob alle oder nur 10 angezeigt werden
+        let showAllGraphs = false; 
 
         document.getElementById('health-date').valueAsDate = new Date();
 
@@ -291,17 +316,38 @@
             });
 
             localStorage.setItem("myHealthData3", JSON.stringify(healthData)); 
-            document.getElementById("health-type").value = "";
-            document.getElementById("health-weight").value = "";
-            document.getElementById("health-steps").value = "";
-            document.getElementById("health-cal").value = "";
+            document.getElementById("health-type").value = ""; document.getElementById("health-weight").value = "";
+            document.getElementById("health-steps").value = ""; document.getElementById("health-cal").value = "";
             loadHealthData();
         }
 
-        function clearHealthData() {
-            if(confirm("Alle Gesundheitsdaten wirklich löschen?")) {
-                healthData = []; localStorage.setItem("myHealthData3", JSON.stringify(healthData)); loadHealthData();
-            }
+        // NEU: Gesundheitsdaten verwalten (Löschen einzelner Einträge)
+        function openHealthManageModal() {
+            const list = document.getElementById("all-health-list"); list.innerHTML = "";
+            let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            sortedData.forEach((d, index) => {
+                const dateObj = new Date(d.date);
+                const dateStr = dateObj.toLocaleDateString('de-DE');
+                const infoText = [
+                    d.type ? d.type : "",
+                    d.weight ? d.weight+"kg" : "",
+                    d.steps ? d.steps+" Schritte" : "",
+                    d.cal ? d.cal+" kcal" : ""
+                ].filter(Boolean).join(" | ");
+
+                list.innerHTML += `<li>
+                    <span><strong>${dateStr}</strong><br><small style="color:#a0a0a0;">${infoText}</small></span>
+                    <button class="delete-btn" onclick="deleteHealthData(${index})">Löschen</button>
+                </li>`;
+            });
+            document.getElementById("manage-health-modal").style.display = "flex";
+        }
+
+        function deleteHealthData(index) {
+            healthData.splice(index, 1);
+            localStorage.setItem("myHealthData3", JSON.stringify(healthData));
+            loadHealthData(); openHealthManageModal(); // Aktualisiert die Liste sofort
         }
 
         function loadHealthData() {
@@ -310,64 +356,65 @@
             drawHealthCharts();
         }
 
-        // NEU: Umschalter für die Graphen-Ansicht
         function toggleGraphView() {
             showAllGraphs = !showAllGraphs;
-            const btn = document.getElementById("toggle-view-btn");
-            if (showAllGraphs) {
-                btn.innerText = "Nur 10 anzeigen";
-            } else {
-                btn.innerText = "Alle anzeigen";
-            }
+            document.getElementById("toggle-view-btn").innerText = showAllGraphs ? "Nur 10 anzeigen" : "Alle anzeigen";
             drawHealthCharts();
         }
 
         function drawHealthCharts() {
             let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            // Je nach Modus: Zeige alle Daten oder nur die letzten 10
             let displayData = showAllGraphs ? sortedData : sortedData.slice(-10);
 
-            const labels = displayData.map(d => {
-                const dateObj = new Date(d.date);
-                let labelText = dateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
-                if(d.type === "Kardio") labelText += " 🏃";
-                if(d.type === "Kraft") labelText += " 🏋️";
-                if(d.type === "Beides") labelText += " 🔥";
-                return labelText;
+            const labels = displayData.map(d => new Date(d.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }));
+            
+            // Punkt-Farben basierend auf dem Training!
+            const pointColors = displayData.map(d => {
+                if(d.type === "Kardio") return '#f1c40f'; // Gelb
+                if(d.type === "Kraft") return '#9b59b6'; // Lila
+                if(d.type === "Beides") return '#e74c3c'; // Rot
+                return '#ffffff'; // Weiß für kein Training
             });
+
+            // Punkt-Größe: Wenn Training, dann größer
+            const pointRadii = displayData.map(d => (d.type && d.type !== "") ? 6 : 3);
 
             const weightData = displayData.map(d => d.weight);
             const stepsData = displayData.map(d => d.steps);
             const calData = displayData.map(d => d.cal);
 
-            weightChartInstance = createChart('weightChart', weightChartInstance, 'line', labels, weightData, 'Gewicht (kg)', '#ff6b6b');
-            stepsChartInstance = createChart('stepsChart', stepsChartInstance, 'bar', labels, stepsData, 'Schritte', '#4facf7');
-            calChartInstance = createChart('calChart', calChartInstance, 'bar', labels, calData, 'Kalorien', '#4ecca3');
+            // Alle Graphen sind jetzt LINIEN-Graphen ('line')
+            weightChartInstance = createChart('weightChart', weightChartInstance, labels, weightData, 'Gewicht (kg)', '#ff6b6b', pointColors, pointRadii);
+            stepsChartInstance = createChart('stepsChart', stepsChartInstance, labels, stepsData, 'Schritte', '#4facf7', pointColors, pointRadii);
+            calChartInstance = createChart('calChart', calChartInstance, labels, calData, 'Kalorien', '#4ecca3', pointColors, pointRadii);
         }
 
-        function createChart(canvasId, chartInstance, type, labels, data, labelName, color) {
+        function createChart(canvasId, chartInstance, labels, data, labelName, lineColor, pointColors, pointRadii) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             if (chartInstance) chartInstance.destroy();
 
             return new Chart(ctx, {
-                type: type,
+                type: 'line', // Alle sind Liniengraphen
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: labelName, data: data, backgroundColor: color, borderColor: color,
-                        borderWidth: 2, borderRadius: type === 'bar' ? 5 : 0, tension: 0.3, spanGaps: true
+                        label: labelName, data: data, 
+                        borderColor: lineColor, 
+                        backgroundColor: lineColor,
+                        pointBackgroundColor: pointColors, // Individuelle Farben!
+                        pointBorderColor: '#16213e', // Dunkler Rand um die Punkte
+                        pointBorderWidth: 2,
+                        pointRadius: pointRadii, // Individuelle Größe!
+                        borderWidth: 2, tension: 0.3, spanGaps: true
                     }]
                 },
-                options: { responsive: true, plugins: { legend: { display: true, labels: { boxWidth: 12 } } }, scales: { y: { beginAtZero: type !== 'line' } } }
+                options: { responsive: true, plugins: { legend: { display: true, labels: { boxWidth: 12 } } } }
             });
         }
 
-        /* --- WETTER & GEBURTSTAGE --- */
+        /* --- 5. WETTER & GEBURTSTAGE --- */
         function getWeatherEmoji(code) { if (code === 0) return "☀️"; if (code <= 2) return "⛅"; if (code === 3) return "☁️"; if (code >= 45 && code <= 48) return "🌫️"; if (code >= 51 && code <= 67) return "🌧️"; if (code >= 71 && code <= 77) return "❄️"; if (code >= 95) return "⛈️"; return "❓"; }
-        
         function loadSavedWeather() { const savedCity = localStorage.getItem("myCity"); if (savedCity) { document.getElementById("city-input").value = savedCity; searchWeather(); } }
-        
         async function searchWeather() {
             const city = document.getElementById("city-input").value; if (!city) return;
             localStorage.setItem("myCity", city);
@@ -376,25 +423,16 @@
                 const geoData = await geoRes.json();
                 if (!geoData.results) return;
                 const { latitude, longitude } = geoData.results[0];
-                
-                // NEU: precipitation_probability in der URL angefragt
                 const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto`);
                 const weatherData = await weatherRes.json();
-                
                 const container = document.getElementById("hourly-forecast"); container.innerHTML = "";
                 const currentHourIndex = new Date().getHours();
-                
                 for (let i = currentHourIndex; i < currentHourIndex + 24; i += 3) {
-                    const timeString = new Date(weatherData.hourly.time[i]).getHours() + ":00";
-                    const temp = Math.round(weatherData.hourly.temperature_2m[i]);
-                    const emoji = getWeatherEmoji(weatherData.hourly.weathercode[i]);
-                    const rain = weatherData.hourly.precipitation_probability[i]; // NEU: Regen
-                    
                     container.innerHTML += `<div class="hourly-item">
-                        <div class="time">${timeString}</div>
-                        <div style="font-size:24px; margin-top:5px;">${emoji}</div>
-                        <div class="temp">${temp}°</div>
-                        <div class="rain">💧 ${rain}%</div>
+                        <div class="time">${new Date(weatherData.hourly.time[i]).getHours()}:00</div>
+                        <div style="font-size:24px; margin-top:5px;">${getWeatherEmoji(weatherData.hourly.weathercode[i])}</div>
+                        <div class="temp">${Math.round(weatherData.hourly.temperature_2m[i])}°</div>
+                        <div class="rain">💧 ${weatherData.hourly.precipitation_probability[i]}%</div>
                     </div>`;
                 }
             } catch (error) {}
@@ -433,7 +471,11 @@
         }
         function openAddModal() { document.getElementById("add-modal").style.display = "flex"; }
         function openManageModal() { renderManageList(); document.getElementById("manage-modal").style.display = "flex"; }
-        function closeModals() { document.getElementById("add-modal").style.display = "none"; document.getElementById("manage-modal").style.display = "none"; }
+        function closeModals() { 
+            document.getElementById("add-modal").style.display = "none"; 
+            document.getElementById("manage-modal").style.display = "none"; 
+            document.getElementById("manage-health-modal").style.display = "none"; 
+        }
     </script>
 </body>
 </html>
