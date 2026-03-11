@@ -59,6 +59,10 @@
         .btn-done { background: #4facf7; color: white; padding: 8px 12px; font-size: 14px; margin: 0; width: auto; border-radius: 8px; border: none; cursor: pointer;}
         .btn-done:hover { background: #3598db; }
         .btn-sync { background: #e94560; color: white; width: auto; margin: 0; display: flex; align-items: center; gap: 5px;}
+        
+        /* Edit Button in Listen */
+        .btn-edit { background: #f1c40f; color: #1a1a2e; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: auto; margin: 0; font-size: 14px;}
+        .btn-edit:hover { background: #d4ac0d; }
 
         /* --- LISTEN --- */
         ul { list-style-type: none; padding: 0; margin: 0; }
@@ -66,7 +70,7 @@
             background: #0f3460; padding: 12px; border-radius: 5px; margin-bottom: 8px;
             display: flex; justify-content: space-between; align-items: center; gap: 10px;
         }
-        .delete-btn { background: #e94560; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: auto; margin: 0; }
+        .delete-btn { background: #e94560; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: auto; margin: 0; font-size: 14px;}
         .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; }
         .time-badge { background: #4ecca3; color: #1a1a2e; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-left: 10px; white-space: nowrap; }
 
@@ -88,14 +92,8 @@
         .legend-text { text-align: center; font-size: 12px; color: #a0a0a0; margin-bottom: 15px; }
         .goal-box { width: 22px; height: 22px; border-radius: 5px; display: inline-block; transition: all 0.3s; }
 
-        /* --- NEU: PRIVATSPHÄRE FILTER --- */
-        .blur-effect {
-            filter: blur(8px);
-            opacity: 0.6;
-            pointer-events: none; /* Verhindert das Aufploppen der Werte beim Drüberfahren */
-            transition: all 0.3s ease;
-            user-select: none;
-        }
+        /* --- PRIVATSPHÄRE FILTER --- */
+        .blur-effect { filter: blur(8px); opacity: 0.6; pointer-events: none; transition: all 0.3s ease; user-select: none; }
 
         @media (max-width: 900px) {
             .dashboard-grid { grid-template-columns: 1fr; }
@@ -107,19 +105,15 @@
 <body>
 
     <script>
-        // SICHERHEIT
         const configSecurity = { authMode: "Base64", encodedKey: "MTIzNDU2", validate: function(input) { return btoa(input) === this.encodedKey; } };
     </script>
-
     <script>
-        // PASSWORT HIER EINTRAGEN
-        // HIER DEINEN Base64 HASH VON "4124" EINTRAGEN!
-        const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
+        // HIER DEINEN SHA-256 HASH VON "133722" EINTRAGEN!
+        const ECHTES_PASSWORT_HASH = "HIER_DEINEN_HASH_EINTRAGEN";
     </script>
-    
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
-        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="****">
+        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
         <button onclick="checkPIN()" style="width: auto;">Entsperren</button>
         <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Falscher PIN!</p>
     </div>
@@ -147,8 +141,12 @@
                         <input type="text" id="city-input" placeholder="Stadt (z.B. Wien)">
                         <button onclick="searchWeather()">Suchen</button>
                     </div>
+                    
                     <h4 style="margin: 10px 0 5px 0;">Heute</h4>
                     <div class="hourly-container" id="hourly-forecast"></div>
+
+                    <h4 style="margin: 15px 0 5px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">Die nächsten 5 Tage</h4>
+                    <div id="daily-forecast"></div>
                 </div>
 
                 <div class="card">
@@ -260,7 +258,7 @@
             <input type="text" id="cloud-gist-id" placeholder="z.B. 8a9b7c6d5e4f3...">
             <label style="font-size:12px; color:#4ecca3;">GitHub Token (Classic):</label>
             <input type="password" id="cloud-github-token" placeholder="z.B. ghp_...">
-            <label style="font-size:12px; color:#e94560; margin-top: 10px; display:block; font-weight:bold;">Dein Verschlüsselungs-Passwort (E2EE):</label>
+            <label style="font-size:12px; color:#e94560; margin-top: 10px; display:block; font-weight:bold;">Verschlüsselungs-Passwort (E2EE):</label>
             <input type="password" id="cloud-password" placeholder="Passwort ausdenken...">
             <button onclick="saveCloudConfigAndPull()">Speichern & Aus Cloud laden</button>
             <button class="btn-secondary" onclick="closeModals()">Abbrechen</button>
@@ -275,22 +273,44 @@
             <input type="date" id="routine-date">
             <label style="font-size:12px; color:#a0a0a0;">Wie oft?</label>
             <select id="routine-interval">
-                <option value="1">1 Monat</option>
-                <option value="2">2 Monate</option>
-                <option value="3">3 Monate</option>
-                <option value="4">4 Monate</option>
-                <option value="6">6 Monate</option>
-                <option value="12">1 Jahr</option>
-                <option value="24">2 Jahre</option>
+                <option value="1">1 Monat</option><option value="2">2 Monate</option><option value="3">3 Monate</option><option value="4">4 Monate</option><option value="6">6 Monate</option><option value="12">1 Jahr</option><option value="24">2 Jahre</option>
             </select>
             <button onclick="addRoutine()">Speichern</button>
             <button class="btn-secondary" onclick="closeModals()">Abbrechen</button>
         </div>
     </div>
-    <div id="manage-routine-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Routinen Verwalten</h2><ul id="all-routine-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="add-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Neuer Geburtstag</h2><input type="text" id="bday-name" placeholder="Name"><input type="date" id="bday-date"><button onclick="addBirthday()">Speichern</button><button class="btn-secondary" onclick="closeModals()">Abbrechen</button></div></div>
-    <div id="manage-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Alle Geburtstage</h2><ul id="all-bday-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
-    <div id="manage-health-modal" class="modal"><div class="modal-content"><h2 style="margin-top:0;">Gesundheit Verwalten</h2><ul id="all-health-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></ul><button class="btn-secondary" onclick="closeModals()">Schließen</button></div></div>
+    
+    <div id="manage-routine-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Routinen Verwalten</h2>
+            <ul id="all-routine-list" style="max-height:400px; overflow-y:auto; margin-bottom:15px; padding-right:5px;"></ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Neuer Geburtstag</h2>
+            <input type="text" id="bday-name" placeholder="Name"><input type="date" id="bday-date">
+            <button onclick="addBirthday()">Speichern</button><button class="btn-secondary" onclick="closeModals()">Abbrechen</button>
+        </div>
+    </div>
+    
+    <div id="manage-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Geburtstage Verwalten</h2>
+            <ul id="all-bday-list" style="max-height:400px; overflow-y:auto; margin-bottom:15px; padding-right:5px;"></ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
+
+    <div id="manage-health-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Gesundheit Verwalten</h2>
+            <ul id="all-health-list" style="max-height:400px; overflow-y:auto; margin-bottom:15px; padding-right:5px;"></ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
 
     <script>
         /* --- 0. GITHUB GIST CLOUD SYNC (E2EE) --- */
@@ -310,9 +330,7 @@
             const gistId = document.getElementById('cloud-gist-id').value.trim();
             const githubToken = document.getElementById('cloud-github-token').value.trim();
             const password = document.getElementById('cloud-password').value.trim();
-            
             if(!gistId || !githubToken || !password) return alert("Bitte alle 3 Felder ausfüllen!");
-            
             localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify({ gistId, githubToken, password }));
             closeModals(); pullFromCloud(); 
         }
@@ -351,10 +369,9 @@
                     const encryptedData = json.files['dashboard.json'].content;
                     const decryptedBytes = CryptoJS.AES.decrypt(encryptedData, config.password);
                     const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
-                    
                     if(!decryptedStr) throw new Error("Falsches Passwort!");
+                    
                     const parsedData = JSON.parse(decryptedStr);
-
                     if(parsedData.birthdays) { birthdays = parsedData.birthdays; localStorage.setItem("myBirthdays", JSON.stringify(birthdays)); }
                     if(parsedData.routines) { routines = parsedData.routines; localStorage.setItem("myRoutines", JSON.stringify(routines)); }
                     if(parsedData.todos) { todos = parsedData.todos; localStorage.setItem("myTodos", JSON.stringify(todos)); }
@@ -381,9 +398,7 @@
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
-                
-                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData();
-                pullFromCloud();
+                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData(); pullFromCloud();
             } else {
                 document.getElementById("error-msg").style.display = "block"; document.getElementById("pin-input").value = ""; 
             }
@@ -460,37 +475,51 @@
             } else { upcomingList.innerHTML = "<p style='color:#a0a0a0; font-size:14px;'>Nichts anstehend.</p>"; }
         }
         function deleteRoutine(index) { routines.splice(index, 1); localStorage.setItem("myRoutines", JSON.stringify(routines)); loadRoutines(); renderManageRoutines(); pushToCloud(); }
+        
         function renderManageRoutines() {
             const list = document.getElementById("all-routine-list"); list.innerHTML = "";
-            routines.forEach((r, index) => { list.innerHTML += `<li><span>${r.name} <small>(${r.interval} Mon.)</small></span> <button class="delete-btn" onclick="deleteRoutine(${index})">Löschen</button></li>`; });
+            routines.forEach((r, index) => { 
+                list.innerHTML += `<li id="routine-item-${index}">
+                    <span>${r.name} <small>(${r.interval} Mon.)</small></span>
+                    <div style="display:flex; gap:5px;"><button class="btn-edit" onclick="editRoutine(${index})">✏️</button><button class="delete-btn" onclick="deleteRoutine(${index})">🗑️</button></div>
+                </li>`; 
+            });
+        }
+        function editRoutine(index) {
+            const r = routines[index];
+            document.getElementById(`routine-item-${index}`).innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+                    <input type="text" id="edit-r-name-${index}" value="${r.name}">
+                    <input type="date" id="edit-r-date-${index}" value="${r.date}">
+                    <select id="edit-r-interval-${index}">
+                        <option value="1" ${r.interval==1?'selected':''}>1 Monat</option><option value="2" ${r.interval==2?'selected':''}>2 Monate</option><option value="3" ${r.interval==3?'selected':''}>3 Monate</option>
+                        <option value="4" ${r.interval==4?'selected':''}>4 Monate</option><option value="6" ${r.interval==6?'selected':''}>6 Monate</option><option value="12" ${r.interval==12?'selected':''}>1 Jahr</option><option value="24" ${r.interval==24?'selected':''}>2 Jahre</option>
+                    </select>
+                    <div style="display:flex; gap:10px; margin-top:5px;">
+                        <button onclick="saveEditRoutine(${index})" style="margin:0; background:#2ecc71;">💾 Speichern</button><button onclick="renderManageRoutines()" style="margin:0; background:#e94560;">❌</button>
+                    </div>
+                </div>`;
+        }
+        function saveEditRoutine(index) {
+            const n = document.getElementById(`edit-r-name-${index}`).value; const d = document.getElementById(`edit-r-date-${index}`).value;
+            if(!n || !d) return alert("Felder dürfen nicht leer sein!");
+            routines[index] = { name: n, date: d, interval: parseInt(document.getElementById(`edit-r-interval-${index}`).value) };
+            localStorage.setItem("myRoutines", JSON.stringify(routines)); loadRoutines(); renderManageRoutines(); pushToCloud();
         }
         function openRoutineAddModal() { document.getElementById("add-routine-modal").style.display = "flex"; }
         function openRoutineManageModal() { renderManageRoutines(); document.getElementById("manage-routine-modal").style.display = "flex"; }
 
-        /* --- 5. GESUNDHEIT & TRAINING (MIT BLUR FUNKTION) --- */
+
+        /* --- 5. GESUNDHEIT & TRAINING --- */
         let healthData = []; let weightChartInstance = null; let stepsChartInstance = null; let calChartInstance = null; 
-        let showAllGraphs = false; 
-        let isWeightBlurred = true; // Startet immer versteckt!
-        
+        let showAllGraphs = false; let isWeightBlurred = true; 
         document.getElementById('health-date').valueAsDate = new Date();
 
         function toggleWeightBlur() {
             isWeightBlurred = !isWeightBlurred;
-            const btn = document.getElementById("toggle-weight-btn");
-            const canvas = document.getElementById("weightChart");
-            
-            if(isWeightBlurred) {
-                btn.innerText = "👁️ Gewicht zeigen";
-                canvas.classList.add("blur-effect");
-            } else {
-                btn.innerText = "🙈 Gewicht verstecken";
-                canvas.classList.remove("blur-effect");
-            }
-
-            // Falls das Verwalten-Fenster gerade offen ist, neu laden um die Werte dort auch scharf/unscharf zu machen
-            if(document.getElementById("manage-health-modal").style.display === "flex") {
-                openHealthManageModal();
-            }
+            document.getElementById("toggle-weight-btn").innerText = isWeightBlurred ? "👁️ Gewicht zeigen" : "🙈 Gewicht verstecken";
+            isWeightBlurred ? document.getElementById("weightChart").classList.add("blur-effect") : document.getElementById("weightChart").classList.remove("blur-effect");
+            if(document.getElementById("manage-health-modal").style.display === "flex") openHealthManageModal();
         }
 
         function addHealthData() {
@@ -501,32 +530,54 @@
             document.getElementById("health-type").value = ""; document.getElementById("health-weight").value = ""; document.getElementById("health-steps").value = ""; document.getElementById("health-cal").value = "";
             loadHealthData(); pushToCloud();
         }
-
+        
         function openHealthManageModal() {
             const list = document.getElementById("all-health-list"); list.innerHTML = "";
-            let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date));
-            sortedData.forEach((d, index) => {
-                // Verschwommene Ansicht in der Liste!
-                let weightHTML = "";
-                if(d.weight) {
-                    weightHTML = `<span class="${isWeightBlurred ? 'blur-effect' : ''}">${d.weight}kg</span>`;
-                }
+            let mappedData = healthData.map((d, i) => ({...d, originalIndex: i}));
+            mappedData.sort((a, b) => new Date(b.date) - new Date(a.date)); 
 
+            mappedData.forEach(d => {
+                let weightHTML = d.weight ? `<span class="${isWeightBlurred ? 'blur-effect' : ''}">${d.weight}kg</span>` : "";
                 const infoText = [ d.type, weightHTML, d.steps?d.steps+" Schr":"", d.cal?d.cal+" kcal":"" ].filter(Boolean).join(" | ");
-                list.innerHTML += `<li><span><strong>${new Date(d.date).toLocaleDateString('de-DE')}</strong><br><small style="color:#a0a0a0;">${infoText}</small></span><button class="delete-btn" onclick="deleteHealthData(${index})">Löschen</button></li>`;
+                list.innerHTML += `<li id="health-item-${d.originalIndex}">
+                    <span><strong>${new Date(d.date).toLocaleDateString('de-DE')}</strong><br><small style="color:#a0a0a0;">${infoText}</small></span>
+                    <div style="display:flex; gap:5px;"><button class="btn-edit" onclick="editHealthData(${d.originalIndex})">✏️</button><button class="delete-btn" onclick="deleteHealthData(${d.originalIndex})">🗑️</button></div>
+                </li>`;
             });
             document.getElementById("manage-health-modal").style.display = "flex";
         }
-        
+        function editHealthData(origIndex) {
+            const d = healthData[origIndex];
+            document.getElementById(`health-item-${origIndex}`).innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+                    <input type="date" id="edit-h-date-${origIndex}" value="${d.date}">
+                    <select id="edit-h-type-${origIndex}">
+                        <option value="" ${!d.type?'selected':''}>Kein Training</option>
+                        <option value="Kardio" ${d.type==='Kardio'?'selected':''}>🏃 Kardio</option><option value="Kraft" ${d.type==='Kraft'?'selected':''}>🏋️ Kraft</option><option value="Beides" ${d.type==='Beides'?'selected':''}>🔥 Beides</option>
+                    </select>
+                    <input type="number" id="edit-h-weight-${origIndex}" value="${d.weight||''}" placeholder="Gewicht (kg)" step="0.1">
+                    <input type="number" id="edit-h-steps-${origIndex}" value="${d.steps||''}" placeholder="Schritte">
+                    <input type="number" id="edit-h-cal-${origIndex}" value="${d.cal||''}" placeholder="Kalorien">
+                    <div style="display:flex; gap:10px; margin-top:5px;">
+                        <button onclick="saveEditHealth(${origIndex})" style="margin:0; background:#2ecc71;">💾 Speichern</button><button onclick="openHealthManageModal()" style="margin:0; background:#e94560;">❌</button>
+                    </div>
+                </div>`;
+        }
+        function saveEditHealth(origIndex) {
+            const dDate = document.getElementById(`edit-h-date-${origIndex}`).value;
+            if(!dDate) return alert("Datum fehlt!");
+            healthData[origIndex] = {
+                date: dDate, type: document.getElementById(`edit-h-type-${origIndex}`).value,
+                weight: document.getElementById(`edit-h-weight-${origIndex}`).value ? parseFloat(document.getElementById(`edit-h-weight-${origIndex}`).value) : null,
+                steps: document.getElementById(`edit-h-steps-${origIndex}`).value ? parseInt(document.getElementById(`edit-h-steps-${origIndex}`).value) : null,
+                cal: document.getElementById(`edit-h-cal-${origIndex}`).value ? parseInt(document.getElementById(`edit-h-cal-${origIndex}`).value) : null
+            };
+            localStorage.setItem("myHealthData3", JSON.stringify(healthData)); loadHealthData(); openHealthManageModal(); pushToCloud();
+        }
+
         function deleteHealthData(index) { healthData.splice(index, 1); localStorage.setItem("myHealthData3", JSON.stringify(healthData)); loadHealthData(); openHealthManageModal(); pushToCloud(); }
-        function saveGoals() {
-            localStorage.setItem("myGoals", JSON.stringify({ steps: document.getElementById('goal-steps').value, cal: document.getElementById('goal-cal').value, cardio: document.getElementById('goal-cardio').value, strength: document.getElementById('goal-strength').value }));
-            drawHealthCharts(); updateWeeklyBoxes(); pushToCloud();
-        }
-        function loadGoals() {
-            const saved = localStorage.getItem("myGoals");
-            if (saved) { const goals = JSON.parse(saved); document.getElementById('goal-steps').value = goals.steps || 10000; document.getElementById('goal-cal').value = goals.cal || 2300; document.getElementById('goal-cardio').value = goals.cardio !== undefined ? goals.cardio : 3; document.getElementById('goal-strength').value = goals.strength !== undefined ? goals.strength : 2; }
-        }
+        function saveGoals() { localStorage.setItem("myGoals", JSON.stringify({ steps: document.getElementById('goal-steps').value, cal: document.getElementById('goal-cal').value, cardio: document.getElementById('goal-cardio').value, strength: document.getElementById('goal-strength').value })); drawHealthCharts(); updateWeeklyBoxes(); pushToCloud(); }
+        function loadGoals() { const saved = localStorage.getItem("myGoals"); if (saved) { const goals = JSON.parse(saved); document.getElementById('goal-steps').value = goals.steps || 10000; document.getElementById('goal-cal').value = goals.cal || 2300; document.getElementById('goal-cardio').value = goals.cardio !== undefined ? goals.cardio : 3; document.getElementById('goal-strength').value = goals.strength !== undefined ? goals.strength : 2; } }
         function loadHealthData() { const saved = localStorage.getItem("myHealthData3"); if (saved) healthData = JSON.parse(saved); drawHealthCharts(); updateWeeklyBoxes(); }
         
         function updateWeeklyBoxes() {
@@ -565,17 +616,54 @@
         }
 
         /* --- 6. WETTER & GEBURTSTAGE --- */
-        function getWeatherEmoji(code) { if (code === 0) return "☀️"; if (code <= 2) return "⛅"; if (code === 3) return "☁️"; if (code >= 45 && code <= 48) return "🌫️"; if (code >= 51 && code <= 67) return "🌧️"; if (code >= 71 && code <= 77) return "❄️"; if (code >= 95) return "⛈️"; return "❓"; }
+        function getWeatherEmoji(code) {
+            const codes = {
+                0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
+                51: "🌧️", 53: "🌧️", 55: "🌧️", 56: "🌧️", 57: "🌧️",
+                61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌧️", 67: "🌧️",
+                71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️",
+                80: "🌦️", 81: "🌧️", 82: "🌧️", 85: "❄️", 86: "❄️",
+                95: "⛈️", 96: "⛈️", 99: "⛈️"
+            };
+            return codes[code] || "🌤️";
+        }
         function loadSavedWeather() { const savedCity = localStorage.getItem("myCity"); if (savedCity) { document.getElementById("city-input").value = savedCity; searchWeather(); } }
         async function searchWeather() {
             const city = document.getElementById("city-input").value; if (!city) return; localStorage.setItem("myCity", city);
             try {
                 const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=de`); const geoData = await geoRes.json();
                 if (!geoData.results) return; const { latitude, longitude } = geoData.results[0];
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto`); const weatherData = await weatherRes.json();
+                
+                // Hole Hourly UND Daily Wetterdaten
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`); 
+                const weatherData = await weatherRes.json();
+                
+                // HOURLY (Heute)
                 const container = document.getElementById("hourly-forecast"); container.innerHTML = ""; const currentHourIndex = new Date().getHours();
                 for (let i = currentHourIndex; i < currentHourIndex + 24; i += 3) {
                     container.innerHTML += `<div class="hourly-item"><div class="time">${new Date(weatherData.hourly.time[i]).getHours()}:00</div><div style="font-size:24px; margin-top:5px;">${getWeatherEmoji(weatherData.hourly.weathercode[i])}</div><div class="temp">${Math.round(weatherData.hourly.temperature_2m[i])}°</div><div class="rain">💧 ${weatherData.hourly.precipitation_probability[i]}%</div></div>`;
+                }
+
+                // DAILY (Die nächsten 5 Tage)
+                const dailyContainer = document.getElementById("daily-forecast"); dailyContainer.innerHTML = "";
+                const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+                for (let i = 1; i <= 5; i++) { // Start bei 1 (Morgen)
+                    const [year, month, day] = weatherData.daily.time[i].split('-');
+                    const dateObj = new Date(year, month - 1, day);
+                    const dayName = dayNames[dateObj.getDay()];
+                    const emoji = getWeatherEmoji(weatherData.daily.weathercode[i]);
+                    const maxT = Math.round(weatherData.daily.temperature_2m_max[i]);
+                    const minT = Math.round(weatherData.daily.temperature_2m_min[i]);
+                    const rain = weatherData.daily.precipitation_probability_max[i];
+
+                    dailyContainer.innerHTML += `
+                        <div style="display:flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span style="width: 40px; font-weight: bold; color: #a0a0a0;">${dayName}</span>
+                            <span style="font-size: 20px;">${emoji}</span>
+                            <span style="width: 70px; text-align: right; color: #4facf7; font-size:12px;">💧 ${rain}%</span>
+                            <span style="width: 80px; text-align: right; color: #a0a0a0;">${minT}° <span style="color:white; font-weight:bold; margin-left: 5px;">${maxT}°</span></span>
+                        </div>
+                    `;
                 }
             } catch (error) {}
         }
@@ -603,8 +691,34 @@
             });
         }
         function deleteBirthday(index) { birthdays.splice(index, 1); localStorage.setItem("myBirthdays", JSON.stringify(birthdays)); loadBirthdays(); renderManageList(); pushToCloud(); }
-        function renderManageList() { const list = document.getElementById("all-bday-list"); list.innerHTML = ""; birthdays.forEach((b, index) => { list.innerHTML += `<li><span>${b.name}</span> <button class="delete-btn" onclick="deleteBirthday(${index})">Löschen</button></li>`; }); }
         
+        function renderManageList() { 
+            const list = document.getElementById("all-bday-list"); list.innerHTML = ""; 
+            birthdays.forEach((b, index) => { 
+                list.innerHTML += `<li id="bday-item-${index}">
+                    <span>${b.name} (${b.date})</span>
+                    <div style="display:flex; gap:5px;"><button class="btn-edit" onclick="editBirthday(${index})">✏️</button><button class="delete-btn" onclick="deleteBirthday(${index})">🗑️</button></div>
+                </li>`; 
+            }); 
+        }
+        function editBirthday(index) {
+            const b = birthdays[index];
+            document.getElementById(`bday-item-${index}`).innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+                    <input type="text" id="edit-b-name-${index}" value="${b.name}">
+                    <input type="date" id="edit-b-date-${index}" value="${b.date}">
+                    <div style="display:flex; gap:10px; margin-top:5px;">
+                        <button onclick="saveEditBirthday(${index})" style="margin:0; background:#2ecc71;">💾 Speichern</button><button onclick="renderManageList()" style="margin:0; background:#e94560;">❌</button>
+                    </div>
+                </div>`;
+        }
+        function saveEditBirthday(index) {
+            const n = document.getElementById(`edit-b-name-${index}`).value; const d = document.getElementById(`edit-b-date-${index}`).value;
+            if(!n || !d) return alert("Felder dürfen nicht leer sein!");
+            birthdays[index] = { name: n, date: d };
+            localStorage.setItem("myBirthdays", JSON.stringify(birthdays)); loadBirthdays(); renderManageList(); pushToCloud();
+        }
+
         function openAddModal() { document.getElementById("add-modal").style.display = "flex"; }
         function openManageModal() { renderManageList(); document.getElementById("manage-modal").style.display = "flex"; }
         function closeModals() { 
