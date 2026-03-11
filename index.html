@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mein Geheimes Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1a1a2e; color: white; margin: 0;
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
+            min-height: 100vh; padding-bottom: 50px;
         }
 
         /* --- LOGIN SCREEN --- */
@@ -25,23 +26,20 @@
         }
 
         /* --- DASHBOARD --- */
-        #dashboard {
-            display: none; width: 90%; max-width: 600px;
-            padding: 20px; margin-top: 20px;
-        }
+        #dashboard { display: none; width: 90%; max-width: 600px; padding: 20px; margin-top: 10px; }
         .card {
             background: #16213e; border-radius: 15px; padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
             border: 1px solid #0f3460;
         }
-        h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 22px; }
         
         /* --- UHR & DATUM --- */
         #time { font-size: 45px; font-weight: bold; text-align: center; margin: 0; color: #4ecca3; }
         #date { font-size: 18px; text-align: center; color: #a0a0a0; margin-bottom: 10px; }
 
         /* --- ALLGEMEINE INPUTS & BUTTONS --- */
-        input[type="text"], input[type="date"], input[type="password"] {
+        input[type="text"], input[type="date"], input[type="password"], input[type="number"], select {
             padding: 10px; margin: 5px 0; border-radius: 5px; border: none;
             width: 100%; box-sizing: border-box; background: #fff; color: #333;
         }
@@ -54,7 +52,7 @@
         .btn-secondary { background: #0f3460; color: white; }
         .btn-secondary:hover { background: #1a4a85; }
 
-        /* --- LISTEN --- */
+        /* --- LISTEN & TO-DOS --- */
         ul { list-style-type: none; padding: 0; margin: 0; }
         li {
             background: #0f3460; padding: 12px; border-radius: 5px; margin-bottom: 8px;
@@ -64,8 +62,11 @@
             background: #e94560; color: white; border: none; padding: 5px 10px;
             border-radius: 3px; cursor: pointer; width: auto; margin: 0;
         }
+        .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer;}
+        .todo-item.done span { text-decoration: line-through; color: #a0a0a0; }
+        .todo-checkbox { transform: scale(1.5); margin-right: 10px; cursor: pointer;}
 
-        /* --- POPUP MODAL (Versteckte Fenster) --- */
+        /* --- POPUPS (Modals) --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
@@ -75,28 +76,26 @@
             width: 90%; max-width: 400px; border: 1px solid #4ecca3;
         }
 
-        /* --- WETTER WIDGET --- */
+        /* --- WETTER --- */
         .weather-search { display: flex; gap: 10px; margin-bottom: 15px; }
         .weather-search input { margin: 0; }
         .weather-search button { margin: 0; width: auto; }
-        
-        .hourly-container {
-            display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px;
-            border-bottom: 1px solid #0f3460; margin-bottom: 15px;
-        }
-        .hourly-item {
-            background: #0f3460; padding: 10px; border-radius: 10px;
-            text-align: center; min-width: 60px;
-        }
+        .hourly-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; border-bottom: 1px solid #0f3460; margin-bottom: 15px; }
+        .hourly-item { background: #0f3460; padding: 10px; border-radius: 10px; text-align: center; min-width: 65px; }
         .hourly-item .time { font-size: 12px; color: #a0a0a0; }
-        .hourly-item .temp { font-weight: bold; font-size: 18px; }
-        .hourly-item .icon { font-size: 24px; margin: 5px 0; }
+        .hourly-item .temp { font-weight: bold; font-size: 18px; margin-top: 5px; }
+        .hourly-item .rain { font-size: 12px; color: #4facf7; margin-top: 3px; }
+
+        /* --- KALENDER --- */
+        .calendar-header { text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 18px;}
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .cal-day-name { font-weight: bold; color: #4ecca3; font-size: 12px; padding-bottom: 5px;}
+        .cal-day { background: #0f3460; padding: 8px 0; border-radius: 5px; font-size: 14px; }
+        .cal-day.today { background: #e94560; font-weight: bold; color: white; }
+        .cal-day.empty { background: transparent; }
         
-        .daily-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .daily-item:last-child { border-bottom: none; }
+        /* --- GESUNDHEIT GRAPHEN --- */
+        .chart-container { background: white; border-radius: 10px; padding: 10px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -116,6 +115,12 @@
         </div>
 
         <div class="card">
+            <h2>📅 Kalender</h2>
+            <div id="calendar-month" class="calendar-header">Monat lädt...</div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+
+        <div class="card">
             <h2>🌤️ Wetter</h2>
             <div class="weather-search">
                 <input type="text" id="city-input" placeholder="Stadt (z.B. Wien)">
@@ -123,14 +128,51 @@
             </div>
             <h4 style="margin: 10px 0 5px 0;">Heute</h4>
             <div class="hourly-container" id="hourly-forecast"></div>
-            <h4 style="margin: 10px 0 5px 0;">Nächste 7 Tage</h4>
-            <div id="daily-forecast"></div>
         </div>
 
         <div class="card">
-            <h2>🎂 Nächste Geburtstage</h2>
-            <ul id="upcoming-bday-list" style="margin-bottom: 15px;">
-                </ul>
+            <h2>📝 To-Do Liste</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="todo-input" placeholder="Neue Aufgabe..." style="margin: 0;">
+                <button onclick="addTodo()" style="margin: 0; width: auto;">+</button>
+            </div>
+            <ul id="todo-list"></ul>
+        </div>
+
+        <div class="card">
+            <h2>🏃 Gesundheit & Training</h2>
+            
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                <input type="date" id="health-date" style="margin:0; flex: 1;">
+                <select id="health-type" style="margin:0; flex: 1;">
+                    <option value="">Kein Training</option>
+                    <option value="Kardio">🏃 Kardio</option>
+                    <option value="Kraft">🏋️ Kraft</option>
+                    <option value="Beides">🔥 Beides</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <input type="number" id="health-weight" placeholder="Gewicht (kg)" step="0.1" style="margin:0; flex: 1;">
+                <input type="number" id="health-steps" placeholder="Schritte" style="margin:0; flex: 1;">
+                <input type="number" id="health-cal" placeholder="Kalorien" style="margin:0; flex: 1;">
+            </div>
+            <button onclick="addHealthData()">Eintragen</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px 0;">
+                <h4 style="margin: 0;">Dein Verlauf</h4>
+                <button id="toggle-view-btn" class="btn-secondary" onclick="toggleGraphView()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 12px;">Alle anzeigen</button>
+            </div>
+            
+            <div class="chart-container"><canvas id="weightChart" style="max-height: 150px;"></canvas></div>
+            <div class="chart-container"><canvas id="stepsChart" style="max-height: 150px;"></canvas></div>
+            <div class="chart-container" style="margin-bottom: 0;"><canvas id="calChart" style="max-height: 150px;"></canvas></div>
+            
+            <button class="btn-secondary" onclick="clearHealthData()" style="margin-top: 15px; background: #e94560;">Verlauf löschen</button>
+        </div>
+
+        <div class="card">
+            <h2>🎂 Geburtstage</h2>
+            <ul id="upcoming-bday-list" style="margin-bottom: 15px;"></ul>
             <div style="display: flex; gap: 10px;">
                 <button onclick="openAddModal()">+ Hinzufügen</button>
                 <button class="btn-secondary" onclick="openManageModal()">Verwalten</button>
@@ -142,18 +184,16 @@
     <div id="add-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0;">Neuer Geburtstag</h2>
-            <input type="text" id="bday-name" placeholder="Name (z.B. Anna)">
+            <input type="text" id="bday-name" placeholder="Name">
             <input type="date" id="bday-date">
             <button onclick="addBirthday()">Speichern</button>
             <button style="background: #e94560;" onclick="closeModals()">Abbrechen</button>
         </div>
     </div>
-
     <div id="manage-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top: 0;">Alle Geburtstage</h2>
-            <ul id="all-bday-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
-                </ul>
+            <ul id="all-bday-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></ul>
             <button class="btn-secondary" onclick="closeModals()">Schließen</button>
         </div>
     </div>
@@ -163,7 +203,7 @@
         async function checkPIN() {
             const enteredPIN = document.getElementById("pin-input").value;
             // ACHTUNG: Hier deinen eigenen Hash einfügen! (Aktuell: 123456)
-            const secretHash = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
+            const secretHash = "9379cbc32c4e60ed507ac62c85072066d170436b970be68c817f381c6faf17ac";
 
             const encoder = new TextEncoder();
             const data = encoder.encode(enteredPIN);
@@ -174,17 +214,13 @@
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
-                loadBirthdays(); 
-                loadSavedWeather();
+                loadBirthdays(); loadSavedWeather(); buildCalendar(); loadTodos(); loadHealthData();
             } else {
                 document.getElementById("error-msg").style.display = "block";
                 document.getElementById("pin-input").value = ""; 
             }
         }
-
-        document.getElementById("pin-input").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") { event.preventDefault(); checkPIN(); }
-        });
+        document.getElementById("pin-input").addEventListener("keypress", e => { if (e.key === "Enter") checkPIN(); });
 
         /* --- 2. UHRZEIT & DATUM --- */
         function updateClock() {
@@ -194,186 +230,210 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        /* --- 3. WETTER --- */
-        function getWeatherEmoji(code) {
-            if (code === 0) return "☀️"; if (code <= 2) return "⛅"; if (code === 3) return "☁️";
-            if (code >= 45 && code <= 48) return "🌫️"; if (code >= 51 && code <= 67) return "🌧️";
-            if (code >= 71 && code <= 77) return "❄️"; if (code >= 95) return "⛈️"; return "❓";
+        /* --- 3. KALENDER BAUEN --- */
+        function buildCalendar() {
+            const now = new Date();
+            const month = now.getMonth(); const year = now.getFullYear(); const today = now.getDate();
+            const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            document.getElementById("calendar-month").innerText = `${monthNames[month]} ${year}`;
+            const grid = document.getElementById("calendar-grid"); grid.innerHTML = "";
+            const dayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+            dayNames.forEach(day => { grid.innerHTML += `<div class="cal-day-name">${day}</div>`; });
+            let firstDay = new Date(year, month, 1).getDay() - 1; if (firstDay === -1) firstDay = 6; 
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div class="cal-day empty"></div>`; }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = (day === today) ? "today" : "";
+                grid.innerHTML += `<div class="cal-day ${isToday}">${day}</div>`;
+            }
         }
 
-        function loadSavedWeather() {
-            const savedCity = localStorage.getItem("myCity");
-            if (savedCity) { document.getElementById("city-input").value = savedCity; searchWeather(); }
+        /* --- 4. TO-DO LISTE --- */
+        let todos = [];
+        function addTodo() {
+            const input = document.getElementById("todo-input"); if(input.value.trim() === "") return;
+            todos.push({ text: input.value, done: false }); input.value = ""; saveTodos();
+        }
+        function toggleTodo(index) { todos[index].done = !todos[index].done; saveTodos(); }
+        function deleteTodo(index) { todos.splice(index, 1); saveTodos(); }
+        function saveTodos() { localStorage.setItem("myTodos", JSON.stringify(todos)); loadTodos(); }
+        function loadTodos() {
+            const saved = localStorage.getItem("myTodos"); if (saved) todos = JSON.parse(saved);
+            const list = document.getElementById("todo-list"); list.innerHTML = "";
+            todos.forEach((todo, index) => {
+                const checked = todo.done ? "checked" : ""; const doneClass = todo.done ? "done" : "";
+                list.innerHTML += `<li class="${doneClass}"><div class="todo-item" onclick="toggleTodo(${index})"><input type="checkbox" class="todo-checkbox" ${checked} onclick="event.stopPropagation()"><span>${todo.text}</span></div><button class="delete-btn" onclick="deleteTodo(${index})">X</button></li>`;
+            });
         }
 
+        /* --- 5. GESUNDHEIT & TRAINING --- */
+        let healthData = [];
+        let weightChartInstance = null; let stepsChartInstance = null; let calChartInstance = null;
+        let showAllGraphs = false; // Steuert, ob alle oder nur 10 angezeigt werden
+
+        document.getElementById('health-date').valueAsDate = new Date();
+
+        function addHealthData() {
+            const date = document.getElementById("health-date").value;
+            const type = document.getElementById("health-type").value; 
+            const weight = document.getElementById("health-weight").value;
+            const steps = document.getElementById("health-steps").value;
+            const cal = document.getElementById("health-cal").value;
+
+            if(!date) return alert("Bitte ein Datum wählen!");
+            if(!weight && !steps && !cal && !type) return alert("Bitte mindestens einen Wert eintragen!");
+
+            healthData.push({
+                date: date, type: type, 
+                weight: weight ? parseFloat(weight) : null,
+                steps: steps ? parseInt(steps) : null,
+                cal: cal ? parseInt(cal) : null
+            });
+
+            localStorage.setItem("myHealthData3", JSON.stringify(healthData)); 
+            document.getElementById("health-type").value = "";
+            document.getElementById("health-weight").value = "";
+            document.getElementById("health-steps").value = "";
+            document.getElementById("health-cal").value = "";
+            loadHealthData();
+        }
+
+        function clearHealthData() {
+            if(confirm("Alle Gesundheitsdaten wirklich löschen?")) {
+                healthData = []; localStorage.setItem("myHealthData3", JSON.stringify(healthData)); loadHealthData();
+            }
+        }
+
+        function loadHealthData() {
+            const saved = localStorage.getItem("myHealthData3");
+            if (saved) healthData = JSON.parse(saved);
+            drawHealthCharts();
+        }
+
+        // NEU: Umschalter für die Graphen-Ansicht
+        function toggleGraphView() {
+            showAllGraphs = !showAllGraphs;
+            const btn = document.getElementById("toggle-view-btn");
+            if (showAllGraphs) {
+                btn.innerText = "Nur 10 anzeigen";
+            } else {
+                btn.innerText = "Alle anzeigen";
+            }
+            drawHealthCharts();
+        }
+
+        function drawHealthCharts() {
+            let sortedData = [...healthData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Je nach Modus: Zeige alle Daten oder nur die letzten 10
+            let displayData = showAllGraphs ? sortedData : sortedData.slice(-10);
+
+            const labels = displayData.map(d => {
+                const dateObj = new Date(d.date);
+                let labelText = dateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+                if(d.type === "Kardio") labelText += " 🏃";
+                if(d.type === "Kraft") labelText += " 🏋️";
+                if(d.type === "Beides") labelText += " 🔥";
+                return labelText;
+            });
+
+            const weightData = displayData.map(d => d.weight);
+            const stepsData = displayData.map(d => d.steps);
+            const calData = displayData.map(d => d.cal);
+
+            weightChartInstance = createChart('weightChart', weightChartInstance, 'line', labels, weightData, 'Gewicht (kg)', '#ff6b6b');
+            stepsChartInstance = createChart('stepsChart', stepsChartInstance, 'bar', labels, stepsData, 'Schritte', '#4facf7');
+            calChartInstance = createChart('calChart', calChartInstance, 'bar', labels, calData, 'Kalorien', '#4ecca3');
+        }
+
+        function createChart(canvasId, chartInstance, type, labels, data, labelName, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            return new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelName, data: data, backgroundColor: color, borderColor: color,
+                        borderWidth: 2, borderRadius: type === 'bar' ? 5 : 0, tension: 0.3, spanGaps: true
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: true, labels: { boxWidth: 12 } } }, scales: { y: { beginAtZero: type !== 'line' } } }
+            });
+        }
+
+        /* --- WETTER & GEBURTSTAGE --- */
+        function getWeatherEmoji(code) { if (code === 0) return "☀️"; if (code <= 2) return "⛅"; if (code === 3) return "☁️"; if (code >= 45 && code <= 48) return "🌫️"; if (code >= 51 && code <= 67) return "🌧️"; if (code >= 71 && code <= 77) return "❄️"; if (code >= 95) return "⛈️"; return "❓"; }
+        
+        function loadSavedWeather() { const savedCity = localStorage.getItem("myCity"); if (savedCity) { document.getElementById("city-input").value = savedCity; searchWeather(); } }
+        
         async function searchWeather() {
-            const city = document.getElementById("city-input").value;
-            if (!city) return;
+            const city = document.getElementById("city-input").value; if (!city) return;
             localStorage.setItem("myCity", city);
-
             try {
                 const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=de`);
                 const geoData = await geoRes.json();
-                if (!geoData.results) return alert("Stadt nicht gefunden!");
-                
+                if (!geoData.results) return;
                 const { latitude, longitude } = geoData.results[0];
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`);
+                
+                // NEU: precipitation_probability in der URL angefragt
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto`);
                 const weatherData = await weatherRes.json();
-
-                renderHourlyWeather(weatherData.hourly);
-                renderDailyWeather(weatherData.daily);
-            } catch (error) { console.error("Wetterfehler:", error); }
+                
+                const container = document.getElementById("hourly-forecast"); container.innerHTML = "";
+                const currentHourIndex = new Date().getHours();
+                
+                for (let i = currentHourIndex; i < currentHourIndex + 24; i += 3) {
+                    const timeString = new Date(weatherData.hourly.time[i]).getHours() + ":00";
+                    const temp = Math.round(weatherData.hourly.temperature_2m[i]);
+                    const emoji = getWeatherEmoji(weatherData.hourly.weathercode[i]);
+                    const rain = weatherData.hourly.precipitation_probability[i]; // NEU: Regen
+                    
+                    container.innerHTML += `<div class="hourly-item">
+                        <div class="time">${timeString}</div>
+                        <div style="font-size:24px; margin-top:5px;">${emoji}</div>
+                        <div class="temp">${temp}°</div>
+                        <div class="rain">💧 ${rain}%</div>
+                    </div>`;
+                }
+            } catch (error) {}
         }
 
-        function renderHourlyWeather(hourlyData) {
-            const container = document.getElementById("hourly-forecast"); container.innerHTML = "";
-            const currentHourIndex = new Date().getHours();
-            for (let i = currentHourIndex; i < currentHourIndex + 24; i += 3) {
-                container.innerHTML += `<div class="hourly-item">
-                    <div class="time">${new Date(hourlyData.time[i]).getHours()}:00</div>
-                    <div class="icon">${getWeatherEmoji(hourlyData.weathercode[i])}</div>
-                    <div class="temp">${Math.round(hourlyData.temperature_2m[i])}°</div>
-                </div>`;
-            }
-        }
-
-        function renderDailyWeather(dailyData) {
-            const container = document.getElementById("daily-forecast"); container.innerHTML = "";
-            const tage = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
-            for (let i = 1; i <= 6; i++) {
-                const dateObj = new Date(dailyData.time[i]);
-                container.innerHTML += `<div class="daily-item">
-                    <div style="width: 100px; font-weight: bold;">${tage[dateObj.getDay()]}, ${dateObj.getDate()}.${dateObj.getMonth() + 1}.</div>
-                    <div style="font-size: 20px;">${getWeatherEmoji(dailyData.weathercode[i])}</div>
-                    <div style="color:#a0a0a0; font-size: 14px;">Min: ${Math.round(dailyData.temperature_2m_min[i])}° | Max: <span style="color:white; font-weight:bold;">${Math.round(dailyData.temperature_2m_max[i])}°</span></div>
-                </div>`;
-            }
-        }
-
-        /* --- 4. GEBURTSTAGE (NEU LOGIK) --- */
         let birthdays = [];
-
-        // Berechnet, wie viele Tage es noch bis zum nächsten Geburtstag sind
         function getNextBirthdayInfo(dateString) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            
-            // Datum zerlegen (unterstützt das alte Format dd.mm.yyyy und das neue yyyy-mm-dd)
-            let day, month, year;
-            if (dateString.includes('-')) {
-                const parts = dateString.split('-');
-                year = parseInt(parts[0]); month = parseInt(parts[1]) - 1; day = parseInt(parts[2]);
-            } else {
-                const parts = dateString.split('.');
-                day = parseInt(parts[0]); month = parseInt(parts[1]) - 1; year = parseInt(parts[2]);
-            }
-
-            // Nächsten Geburtstag in diesem Jahr ansetzen
+            const today = new Date(); today.setHours(0,0,0,0); let day, month, year;
+            if (dateString.includes('-')) { const parts = dateString.split('-'); year = parseInt(parts[0]); month = parseInt(parts[1]) - 1; day = parseInt(parts[2]); } 
+            else { const parts = dateString.split('.'); day = parseInt(parts[0]); month = parseInt(parts[1]) - 1; year = parseInt(parts[2]); }
             let nextBday = new Date(today.getFullYear(), month, day);
-            
-            // Wenn der Geburtstag dieses Jahr schon war, setze ihn aufs nächste Jahr
-            if (nextBday < today) {
-                nextBday.setFullYear(today.getFullYear() + 1);
-            }
-
-            // Tage ausrechnen
-            const diffTime = nextBday - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            // Alter ausrechnen
-            const ageTurn = nextBday.getFullYear() - year;
-
-            return { diffDays, dateObj: nextBday, ageTurn };
+            if (nextBday < today) nextBday.setFullYear(today.getFullYear() + 1);
+            return { diffDays: Math.ceil((nextBday - today) / (1000 * 60 * 60 * 24)), dateObj: nextBday, ageTurn: nextBday.getFullYear() - year };
         }
-
         function addBirthday() {
-            const name = document.getElementById("bday-name").value;
-            const date = document.getElementById("bday-date").value; // Format: yyyy-mm-dd
-            if (!name || !date) return alert("Bitte Name und Datum eingeben!");
-
-            birthdays.push({ name: name, date: date });
-            localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
-            
-            document.getElementById("bday-name").value = "";
-            document.getElementById("bday-date").value = "";
-            closeModals();
-            renderDashboardBirthdays();
+            const name = document.getElementById("bday-name").value; const date = document.getElementById("bday-date").value;
+            if (!name || !date) return;
+            birthdays.push({ name: name, date: date }); localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
+            document.getElementById("bday-name").value = ""; document.getElementById("bday-date").value = ""; closeModals(); loadBirthdays();
         }
-
         function loadBirthdays() {
-            const saved = localStorage.getItem("myBirthdays");
-            if (saved) birthdays = JSON.parse(saved);
-            renderDashboardBirthdays();
-        }
-
-        function deleteBirthday(index) {
-            birthdays.splice(index, 1);
-            localStorage.setItem("myBirthdays", JSON.stringify(birthdays));
-            renderManageList(); // Aktualisiert die Verwalten-Liste
-            renderDashboardBirthdays(); // Aktualisiert das Dashboard
-        }
-
-        // Zeigt nur die Top 3 auf dem Dashboard
-        function renderDashboardBirthdays() {
-            const list = document.getElementById("upcoming-bday-list");
-            list.innerHTML = "";
-
-            if (birthdays.length === 0) {
-                list.innerHTML = "<p style='color:#a0a0a0'>Keine Geburtstage gespeichert.</p>";
-                return;
-            }
-
-            // Jeden Geburtstag analysieren und sortieren
-            let sortedBdays = birthdays.map(b => {
-                const info = getNextBirthdayInfo(b.date);
-                return { ...b, info };
-            });
-
-            // Sortieren nach wenigsten Tagen
-            sortedBdays.sort((a, b) => a.info.diffDays - b.info.diffDays);
-
-            // Nur die ersten 3 nehmen
-            const top3 = sortedBdays.slice(0, 3);
-
-            top3.forEach(b => {
+            const saved = localStorage.getItem("myBirthdays"); if (saved) birthdays = JSON.parse(saved);
+            const list = document.getElementById("upcoming-bday-list"); list.innerHTML = "";
+            if (birthdays.length === 0) return;
+            let sortedBdays = birthdays.map(b => ({ ...b, info: getNextBirthdayInfo(b.date) })).sort((a, b) => a.info.diffDays - b.info.diffDays).slice(0, 3);
+            sortedBdays.forEach(b => {
                 const dateStr = b.info.dateObj.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'});
-                let daysText = "";
-                if (b.info.diffDays === 0) daysText = "<span style='color:#4ecca3;'>Heute! 🎉</span>";
-                else if (b.info.diffDays === 1) daysText = "Morgen";
-                else daysText = `in ${b.info.diffDays} Tagen`;
-
-                list.innerHTML += `<li>
-                    <span><strong>${b.name}</strong> (wird ${b.info.ageTurn})<br>
-                    <small style="color: #a0a0a0;">am ${dateStr} - ${daysText}</small></span>
-                </li>`;
+                let daysText = b.info.diffDays === 0 ? "<span style='color:#4ecca3;'>Heute! 🎉</span>" : (b.info.diffDays === 1 ? "Morgen" : `in ${b.info.diffDays} Tagen`);
+                list.innerHTML += `<li><span><strong>${b.name}</strong> (wird ${b.info.ageTurn})<br><small style="color: #a0a0a0;">am ${dateStr} - ${daysText}</small></span></li>`;
             });
         }
-
-        // Zeigt alle Geburtstage im Verwalten-Fenster
+        function deleteBirthday(index) { birthdays.splice(index, 1); localStorage.setItem("myBirthdays", JSON.stringify(birthdays)); loadBirthdays(); renderManageList(); }
         function renderManageList() {
-            const list = document.getElementById("all-bday-list");
-            list.innerHTML = "";
-            birthdays.forEach((b, index) => {
-                // Konvertiere das Datum für die Anzeige schön
-                const d = new Date(b.date);
-                const showDate = isNaN(d) ? b.date : d.toLocaleDateString('de-DE');
-                list.innerHTML += `<li>
-                    <span>${b.name} <small>(${showDate})</small></span>
-                    <button class="delete-btn" onclick="deleteBirthday(${index})">Löschen</button>
-                </li>`;
-            });
+            const list = document.getElementById("all-bday-list"); list.innerHTML = "";
+            birthdays.forEach((b, index) => { list.innerHTML += `<li><span>${b.name}</span> <button class="delete-btn" onclick="deleteBirthday(${index})">Löschen</button></li>`; });
         }
-
-        /* --- POPUP STEUERUNG --- */
         function openAddModal() { document.getElementById("add-modal").style.display = "flex"; }
-        function openManageModal() { 
-            renderManageList(); 
-            document.getElementById("manage-modal").style.display = "flex"; 
-        }
-        function closeModals() {
-            document.getElementById("add-modal").style.display = "none";
-            document.getElementById("manage-modal").style.display = "none";
-        }
+        function openManageModal() { renderManageList(); document.getElementById("manage-modal").style.display = "flex"; }
+        function closeModals() { document.getElementById("add-modal").style.display = "none"; document.getElementById("manage-modal").style.display = "none"; }
     </script>
 </body>
 </html>
