@@ -35,9 +35,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #0f3460;
             margin-bottom: 20px;
         }
-        /* Extra Design für die Wichtig-Box */
         #overdue-card { border: 2px solid #e94560; background: #231520; display: none; }
-        
         h2 { color: #4ecca3; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 22px; }
         
         /* --- UHR & DATUM --- */
@@ -58,9 +56,9 @@
         .btn-secondary { background: #0f3460; color: white; }
         .btn-secondary:hover { background: #1a4a85; }
         
-        /* Grüner Button für Routinen */
-        .btn-done { background: #2ecc71; color: white; padding: 8px 12px; font-size: 14px; margin: 0; width: auto; border-radius: 8px;}
-        .btn-done:hover { background: #27ae60; }
+        /* Reset Button für Routinen */
+        .btn-done { background: #4facf7; color: white; padding: 8px 12px; font-size: 14px; margin: 0; width: auto; border-radius: 8px; border: none; cursor: pointer;}
+        .btn-done:hover { background: #3598db; }
 
         /* --- LISTEN & TO-DOS --- */
         ul { list-style-type: none; padding: 0; margin: 0; }
@@ -69,9 +67,7 @@
             display: flex; justify-content: space-between; align-items: center; gap: 10px;
         }
         .delete-btn { background: #e94560; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: auto; margin: 0; }
-        .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer;}
-        .todo-item.done span { text-decoration: line-through; color: #a0a0a0; }
-        .todo-checkbox { transform: scale(1.5); margin-right: 10px; cursor: pointer;}
+        .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; }
         .time-badge { background: #4ecca3; color: #1a1a2e; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-left: 10px; white-space: nowrap; }
 
         /* --- POPUPS (Modals) --- */
@@ -107,13 +103,13 @@
     </script>
 
     <script>
-        // HIER DEINEN BASE64 HASH VON "1234" EINTRAGEN!
+        // HIER DEINEN Base64 HASH VON "4124" EINTRAGEN!
         const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
     </script>
     
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
-        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
+        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="****">
         <button onclick="checkPIN()" style="width: auto;">Entsperren</button>
         <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Falscher PIN!</p>
     </div>
@@ -160,28 +156,8 @@
                         <button onclick="addHealthData()">Eintragen</button>
                         <button class="btn-secondary" onclick="openHealthManageModal()">Verwalten</button>
                     </div>
-                    
-                    <h4 style="margin: 25px 0 10px 0;">Deine Ziele & Referenzlinien</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #0f3460; padding: 15px; border-radius: 10px;">
-                        <div>
-                            <label style="font-size: 12px; color: #a0a0a0;">Ziel Schritte (Graph-Linie):</label>
-                            <input type="number" id="goal-steps" value="10000" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #a0a0a0;">Ziel Kalorien (Graph-Linie):</label>
-                            <input type="number" id="goal-cal" value="2300" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #a0a0a0;">Kardio pro Woche:</label>
-                            <input type="number" id="goal-cardio" value="3" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #a0a0a0;">Kraft pro Woche:</label>
-                            <input type="number" id="goal-strength" value="2" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
-                        </div>
-                    </div>
 
-                    <div style="background: #1a1a2e; border: 1px solid #4ecca3; padding: 15px; border-radius: 10px; margin-bottom: 25px;">
+                    <div style="background: #1a1a2e; border: 1px solid #4ecca3; padding: 15px; border-radius: 10px; margin-top: 25px; margin-bottom: 25px;">
                         <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #4ecca3;">Dein Training der letzten 7 Tage</h4>
                         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                             <div style="flex: 1;">
@@ -206,6 +182,26 @@
                         <div class="chart-container"><canvas id="weightChart" style="max-height: 150px;"></canvas></div>
                         <div class="chart-container"><canvas id="stepsChart" style="max-height: 150px;"></canvas></div>
                         <div class="chart-container"><canvas id="calChart" style="max-height: 150px;"></canvas></div>
+                    </div>
+
+                    <h4 style="margin: 25px 0 10px 0;">Ziele & Referenzlinien anpassen</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #0f3460; padding: 15px; border-radius: 10px;">
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Ziel Schritte (Graph-Linie):</label>
+                            <input type="number" id="goal-steps" value="10000" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Ziel Kalorien (Graph-Linie):</label>
+                            <input type="number" id="goal-cal" value="2300" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Kardio pro Woche:</label>
+                            <input type="number" id="goal-cardio" value="3" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #a0a0a0;">Kraft pro Woche:</label>
+                            <input type="number" id="goal-strength" value="2" onchange="saveGoals()" style="margin: 0; padding: 8px; font-size: 14px;">
+                        </div>
                     </div>
                 </div>
 
@@ -261,9 +257,12 @@
             <label style="font-size:12px; color:#a0a0a0; margin-left: 5px;">Wie oft muss das gemacht werden?</label>
             <select id="routine-interval">
                 <option value="1">Jeden Monat</option>
+                <option value="2">Alle 2 Monate</option>
                 <option value="3">Alle 3 Monate</option>
+                <option value="4">Alle 4 Monate</option>
                 <option value="6">Alle 6 Monate (Halbjährlich)</option>
                 <option value="12">Alle 12 Monate (Jährlich)</option>
+                <option value="24">Alle 2 Jahre</option>
             </select>
             <button onclick="addRoutine()">Speichern</button>
             <button style="background: #e94560;" onclick="closeModals()">Abbrechen</button>
@@ -335,31 +334,28 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        /* --- 3. TO-DO LISTE --- */
+        /* --- 3. TO-DO LISTE (Ohne Checkbox) --- */
         let todos = [];
         function addTodo() {
             const input = document.getElementById("todo-input"); 
             const dateInput = document.getElementById("todo-date");
             if(input.value.trim() === "") return;
-            todos.push({ text: input.value, date: dateInput.value, done: false }); 
+            todos.push({ text: input.value, date: dateInput.value }); 
             input.value = ""; dateInput.value = ""; saveTodos();
         }
-        function toggleTodo(index) { todos[index].done = !todos[index].done; saveTodos(); }
         function deleteTodo(index) { todos.splice(index, 1); saveTodos(); }
         function saveTodos() { localStorage.setItem("myTodos", JSON.stringify(todos)); loadTodos(); }
         function loadTodos() {
             const saved = localStorage.getItem("myTodos"); if (saved) todos = JSON.parse(saved);
             const list = document.getElementById("todo-list"); list.innerHTML = "";
             todos.forEach((todo, index) => {
-                const checked = todo.done ? "checked" : ""; const doneClass = todo.done ? "done" : "";
                 let timeBadgeHtml = "";
                 if (todo.date) {
                     const d = new Date(todo.date);
                     timeBadgeHtml = `<span class="time-badge">bis ${d.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'})}</span>`;
                 }
-                list.innerHTML += `<li class="${doneClass}">
-                    <div class="todo-item" onclick="toggleTodo(${index})">
-                        <input type="checkbox" class="todo-checkbox" ${checked} onclick="event.stopPropagation()">
+                list.innerHTML += `<li>
+                    <div class="todo-item">
                         <span>${todo.text} ${timeBadgeHtml}</span>
                     </div>
                     <button class="delete-btn" onclick="deleteTodo(${index})">X</button>
@@ -367,7 +363,7 @@
             });
         }
 
-        /* --- 4. ROUTINEN (MIT WICHTIG-FUNKTION) --- */
+        /* --- 4. ROUTINEN (MIT RESET BUTTON) --- */
         let routines = [];
         
         function getNextRoutineInfo(routine) {
@@ -392,11 +388,8 @@
             closeModals(); loadRoutines();
         }
 
-        // Abhaken: Setzt das Datum auf heute und rechnet neu
         function markRoutineDone(index) {
             const todayStr = new Date().toISOString().split('T')[0];
-            
-            // Da wir in verschiedenen Listen rendern, brauchen wir den originalen Index.
             routines[index].date = todayStr; 
             localStorage.setItem("myRoutines", JSON.stringify(routines));
             loadRoutines();
@@ -419,7 +412,6 @@
             let overdueItems = [];
             let upcomingItems = [];
             
-            // Routinen analysieren und in 2 Listen aufteilen
             routines.forEach((r, i) => {
                 const info = getNextRoutineInfo(r);
                 if (info.diffDays < 0) {
@@ -429,28 +421,26 @@
                 }
             });
             
-            // 1. ÜBERFÄLLIGE ANZEIGEN (Die Wichtig-Box)
             if (overdueItems.length > 0) {
                 overdueCard.style.display = "block";
                 overdueItems.sort((a, b) => a.info.diffDays - b.info.diffDays).forEach(r => {
                     const lastDateStr = new Date(r.date).toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit', year:'numeric'});
                     overdueList.innerHTML += `<li>
                         <span><strong>${r.name}</strong><br><small style="color: #e94560;">Seit ${Math.abs(r.info.diffDays)} Tagen überfällig! (Zuletzt: ${lastDateStr})</small></span>
-                        <button class="btn-done" title="Heute erledigt!" onclick="markRoutineDone(${r.originalIndex})">✔️</button>
+                        <button class="btn-done" title="Zeit für diese Routine neu starten" onclick="markRoutineDone(${r.originalIndex})">🔄 Reset</button>
                     </li>`;
                 });
             } else {
                 overdueCard.style.display = "none";
             }
             
-            // 2. ANSTEHENDE ANZEIGEN (Normale Box, Max. 3 Stück)
             if (upcomingItems.length > 0) {
                 upcomingItems.sort((a, b) => a.info.diffDays - b.info.diffDays).slice(0, 3).forEach(r => {
                     const lastDateStr = new Date(r.date).toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit', year:'numeric'});
                     let daysText = r.info.diffDays === 0 ? `<span style='color:#f1c40f; font-weight:bold;'>Heute fällig!</span>` : `in ${r.info.diffDays} Tagen`;
                     upcomingList.innerHTML += `<li>
                         <span><strong>${r.name}</strong><br><small style="color: #a0a0a0;">${daysText} (Zuletzt: ${lastDateStr})</small></span>
-                        <button class="btn-done" title="Heute erledigt!" onclick="markRoutineDone(${r.originalIndex})">✔️</button>
+                        <button class="btn-done" title="Zeit für diese Routine neu starten" onclick="markRoutineDone(${r.originalIndex})">🔄 Reset</button>
                     </li>`;
                 });
             } else {
