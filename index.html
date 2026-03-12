@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>III ELHUEL III</title>
+    <title>Mein Geheimes Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
@@ -130,9 +130,9 @@
 
     <div id="login-screen">
         <h2 style="color: white;">Bitte PIN eingeben</h2>
-        <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="******">
+        <input type="password" id="pin-input" class="pin-input" maxlength="10" placeholder="****">
         <button onclick="checkPIN()" style="width: auto;">Entsperren</button>
-        <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Falscher PIN!</p>
+        <p id="error-msg" style="color: #e94560; display: none; margin-top: 15px;">Richtiger PIN!</p>
     </div>
 
     <div id="dashboard">
@@ -260,16 +260,6 @@
                 </div>
 
                 <div class="card">
-                    <h2>📁 Dateitresor</h2>
-                    <p style="font-size: 12px; color: #a0a0a0; margin-top: -10px; margin-bottom: 15px;">Cloud-Limit: Max. 3 MB gesamt. <span id="file-size-indicator" style="color: #4ecca3; font-weight: bold;">(0.00 MB / 3.00 MB)</span></p>
-                    <div style="display: flex; gap: 5px; margin-bottom: 15px;">
-                        <input type="file" id="file-input" style="margin: 0; flex: 2; padding: 5px; height: 38px; box-sizing: border-box;">
-                        <button onclick="saveFile()" style="margin: 0; width: auto; height: 38px; display: flex; align-items: center;">Speichern</button>
-                    </div>
-                    <ul id="files-list"></ul>
-                </div>
-
-                <div class="card">
                     <h2>🔗 Lesezeichen</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px;">
                         <input type="text" id="link-name" placeholder="Name" style="margin: 0; flex: 1;">
@@ -295,6 +285,19 @@
                         <button onclick="openAddModal()">+ Hinzufügen</button>
                         <button class="btn-secondary" onclick="openManageModal()">Verwalten</button>
                     </div>
+                </div>
+
+                <div class="card">
+                    <h2>📁 Dateitresor</h2>
+                    <p style="font-size: 12px; color: #a0a0a0; margin-top: -10px; margin-bottom: 15px;">Cloud-Limit: Max. 3 MB gesamt. <span id="file-size-indicator" style="color: #4ecca3; font-weight: bold;">(0.00 MB / 3.00 MB)</span></p>
+                    
+                    <input type="text" id="file-custom-name" placeholder="Eigener Name (optional, z.B. 'Steuer 2024')" style="margin: 0 0 5px 0;">
+                    
+                    <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                        <input type="file" id="file-input" style="margin: 0; flex: 2; padding: 5px; height: 38px; box-sizing: border-box;">
+                        <button onclick="saveFile()" style="margin: 0; width: auto; height: 38px; display: flex; align-items: center;">Speichern</button>
+                    </div>
+                    <ul id="files-list"></ul>
                 </div>
 
             </div>
@@ -477,7 +480,7 @@
         setInterval(updateClock, 1000); updateClock();
 
 
-        /* --- DATEITRESOR (MIT 3 MB LIMIT) --- */
+        /* --- DATEITRESOR (MIT 3 MB LIMIT & CUSTOM NAME) --- */
         let savedFiles = [];
         const MAX_STORAGE_BYTES = 3 * 1024 * 1024; // 3 MB in Bytes
 
@@ -495,24 +498,31 @@
 
         function saveFile() {
             const fileInput = document.getElementById("file-input");
+            const customNameInput = document.getElementById("file-custom-name");
             if(fileInput.files.length === 0) return;
             const file = fileInput.files[0];
             
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64Data = e.target.result;
-                const newEntrySize = JSON.stringify({ name: file.name, data: base64Data }).length;
+                const originalName = file.name;
+                const customName = customNameInput.value.trim() !== "" ? customNameInput.value.trim() : originalName;
+                
+                const newEntry = { name: customName, originalName: originalName, data: base64Data };
+                const newEntrySize = JSON.stringify(newEntry).length;
                 const currentTotalSize = JSON.stringify(savedFiles).length;
                 
                 if (currentTotalSize + newEntrySize > MAX_STORAGE_BYTES) {
                     alert("⚠️ Speicherlimit erreicht!\n\nDas Hinzufügen dieser Datei würde das Limit von 3 MB für den Cloud-Sync überschreiten. Bitte lösche zuerst andere Dateien.");
                     fileInput.value = "";
+                    customNameInput.value = "";
                     return;
                 }
 
-                savedFiles.push({ name: file.name, data: base64Data });
+                savedFiles.push(newEntry);
                 localStorage.setItem("mySavedFiles", JSON.stringify(savedFiles));
                 fileInput.value = "";
+                customNameInput.value = "";
                 renderFiles();
                 pushToCloud();
             };
@@ -528,10 +538,16 @@
         function renderFiles() {
             const list = document.getElementById("files-list"); list.innerHTML = "";
             savedFiles.forEach((f, index) => {
+                // Abwärtskompatibilität falls alte Dateien noch kein 'originalName' haben
+                const origName = f.originalName || f.name; 
+                const showSmallOriginal = f.name !== origName ? `<br><small style="color:#a0a0a0; font-weight:normal; font-size: 10px;">${origName}</small>` : '';
+
                 list.innerHTML += `<li>
-                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; display: inline-block;" title="${f.name}">📄 ${f.name}</span>
-                    <div style="display:flex; gap: 5px;">
-                        <a href="${f.data}" download="${f.name}" style="text-decoration:none;">
+                    <div style="display:flex; flex-direction:column; overflow: hidden;">
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; display: inline-block; line-height: 1.2;" title="${origName}">📄 <strong>${f.name}</strong>${showSmallOriginal}</span>
+                    </div>
+                    <div style="display:flex; gap: 5px; align-items: center;">
+                        <a href="${f.data}" download="${origName}" style="text-decoration:none;">
                             <button class="btn-done" style="margin:0; background: #2ecc71;" title="Herunterladen">⬇️</button>
                         </a>
                         <button class="delete-btn" onclick="deleteFile(${index})">🗑️</button>
