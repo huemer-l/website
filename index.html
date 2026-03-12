@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Geheimes Dashboard</title>
+    <title>III ELHUEL III</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
@@ -49,6 +49,10 @@
             padding: 10px; margin: 5px 0; border-radius: 5px; border: none;
             width: 100%; box-sizing: border-box; background: #fff; color: #333;
         }
+        /* Datei-Upload Styling */
+        input[type="file"] { background: #0f3460; color: white; padding: 8px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        input[type="file"]::file-selector-button { background: #4ecca3; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; color: #1a1a2e; font-weight: bold; margin-right: 10px; }
+
         button {
             background: #4ecca3; color: #1a1a2e; padding: 10px 20px; border: none; 
             border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px;
@@ -120,7 +124,7 @@
         const configSecurity = { authMode: "Base64", encodedKey: "MTIzNDU2", validate: function(input) { return btoa(input) === this.encodedKey; } };
     </script>
     <script>
-        // HIER DEINEN SHA-256 HASH VON "133722" EINTRAGEN!
+        // HIER DEINEN BASE64 HASH VON "4124" EINTRAGEN!
         const ECHTES_PASSWORT_HASH = "13f20e4f91ce2b44a4b29a677ed5d58bc32d153e0ddd36bfec6a8230b4e344c1";
     </script>
 
@@ -223,7 +227,7 @@
                 </div>
 
                 <div class="card">
-                    <h2>🎯 Meine Ziele</h2>
+                    <h2>🎯 Meine Ziele (0-100%)</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px;">
                         <input type="text" id="cgoal-name" placeholder="Was willst du erreichen?" style="margin: 0; flex: 2;">
                         <select id="cgoal-importance" style="margin: 0; flex: 1;">
@@ -253,6 +257,16 @@
                         <button onclick="addTodo()" style="margin: 0; width: auto;">+</button>
                     </div>
                     <ul id="todo-list"></ul>
+                </div>
+
+                <div class="card">
+                    <h2>📁 Dateitresor</h2>
+                    <p style="font-size: 12px; color: #a0a0a0; margin-top: -10px; margin-bottom: 15px;">Cloud-Limit: Max. 3 MB gesamt. <span id="file-size-indicator" style="color: #4ecca3; font-weight: bold;">(0.00 MB / 3.00 MB)</span></p>
+                    <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                        <input type="file" id="file-input" style="margin: 0; flex: 2; padding: 5px; height: 38px; box-sizing: border-box;">
+                        <button onclick="saveFile()" style="margin: 0; width: auto; height: 38px; display: flex; align-items: center;">Speichern</button>
+                    </div>
+                    <ul id="files-list"></ul>
                 </div>
 
                 <div class="card">
@@ -384,7 +398,8 @@
                 healthData: healthData, 
                 goals: JSON.parse(localStorage.getItem("myGoals") || "{}"),
                 links: links,
-                customGoals: customGoals
+                customGoals: customGoals,
+                savedFiles: savedFiles
             };
             const jsonStr = JSON.stringify(allData);
             const encryptedData = CryptoJS.AES.encrypt(jsonStr, config.password).toString();
@@ -424,8 +439,9 @@
                     if(parsedData.goals) { localStorage.setItem("myGoals", JSON.stringify(parsedData.goals)); }
                     if(parsedData.links) { links = parsedData.links; localStorage.setItem("myLinks", JSON.stringify(links)); }
                     if(parsedData.customGoals) { customGoals = parsedData.customGoals; localStorage.setItem("myCustomGoals", JSON.stringify(customGoals)); }
+                    if(parsedData.savedFiles) { savedFiles = parsedData.savedFiles; localStorage.setItem("mySavedFiles", JSON.stringify(savedFiles)); }
 
-                    loadBirthdays(); loadRoutines(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals();
+                    loadBirthdays(); loadRoutines(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals(); loadFiles();
                     document.getElementById('sync-status').innerText = "✅ Cloud: Aktuell";
                 } else { document.getElementById('sync-status').innerText = "✅ Cloud leer / Initialisiert"; }
             } catch(e) { alert("Fehler! Passwort oder Token falsch."); document.getElementById('sync-status').innerText = "❌ Sync Fehler!"; }
@@ -445,7 +461,7 @@
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
-                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals(); pullFromCloud();
+                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals(); loadFiles(); pullFromCloud();
             } else {
                 document.getElementById("error-msg").style.display = "block"; document.getElementById("pin-input").value = ""; 
             }
@@ -459,6 +475,78 @@
             document.getElementById("date").innerText = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
         setInterval(updateClock, 1000); updateClock();
+
+
+        /* --- DATEITRESOR (MIT 3 MB LIMIT) --- */
+        let savedFiles = [];
+        const MAX_STORAGE_BYTES = 3 * 1024 * 1024; // 3 MB in Bytes
+
+        function updateStorageIndicator() {
+            let currentSize = JSON.stringify(savedFiles).length;
+            let mbSize = (currentSize / (1024 * 1024)).toFixed(2);
+            document.getElementById("file-size-indicator").innerText = `(${mbSize} MB / 3.00 MB)`;
+            
+            if (currentSize > MAX_STORAGE_BYTES * 0.9) {
+                document.getElementById("file-size-indicator").style.color = "#e94560"; // Rot wenn fast voll
+            } else {
+                document.getElementById("file-size-indicator").style.color = "#4ecca3"; // Grün wenn ok
+            }
+        }
+
+        function saveFile() {
+            const fileInput = document.getElementById("file-input");
+            if(fileInput.files.length === 0) return;
+            const file = fileInput.files[0];
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                const newEntrySize = JSON.stringify({ name: file.name, data: base64Data }).length;
+                const currentTotalSize = JSON.stringify(savedFiles).length;
+                
+                if (currentTotalSize + newEntrySize > MAX_STORAGE_BYTES) {
+                    alert("⚠️ Speicherlimit erreicht!\n\nDas Hinzufügen dieser Datei würde das Limit von 3 MB für den Cloud-Sync überschreiten. Bitte lösche zuerst andere Dateien.");
+                    fileInput.value = "";
+                    return;
+                }
+
+                savedFiles.push({ name: file.name, data: base64Data });
+                localStorage.setItem("mySavedFiles", JSON.stringify(savedFiles));
+                fileInput.value = "";
+                renderFiles();
+                pushToCloud();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteFile(index) {
+            savedFiles.splice(index, 1);
+            localStorage.setItem("mySavedFiles", JSON.stringify(savedFiles));
+            renderFiles(); pushToCloud();
+        }
+
+        function renderFiles() {
+            const list = document.getElementById("files-list"); list.innerHTML = "";
+            savedFiles.forEach((f, index) => {
+                list.innerHTML += `<li>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; display: inline-block;" title="${f.name}">📄 ${f.name}</span>
+                    <div style="display:flex; gap: 5px;">
+                        <a href="${f.data}" download="${f.name}" style="text-decoration:none;">
+                            <button class="btn-done" style="margin:0; background: #2ecc71;" title="Herunterladen">⬇️</button>
+                        </a>
+                        <button class="delete-btn" onclick="deleteFile(${index})">🗑️</button>
+                    </div>
+                </li>`;
+            });
+            updateStorageIndicator();
+        }
+
+        function loadFiles() { 
+            const saved = localStorage.getItem("mySavedFiles"); 
+            if(saved) savedFiles = JSON.parse(saved); 
+            renderFiles(); 
+        }
+
 
         /* --- LESEZEICHEN / LINKS --- */
         let links = [];
