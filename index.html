@@ -74,7 +74,7 @@
         .todo-item { display: flex; align-items: center; gap: 10px; width: 100%; }
         .time-badge { background: #4ecca3; color: #1a1a2e; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-left: 10px; white-space: nowrap; }
 
-        /* --- NEU: LESEZEICHEN & FORTSCHRITT --- */
+        /* --- LESEZEICHEN & FORTSCHRITT --- */
         .link-item a { color: #4facf7; text-decoration: none; font-weight: bold; }
         .link-item a:hover { text-decoration: underline; }
         
@@ -226,7 +226,6 @@
                     <h2>🎯 Meine Ziele</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px;">
                         <input type="text" id="cgoal-name" placeholder="Was willst du erreichen?" style="margin: 0; flex: 2;">
-                        <input type="number" id="cgoal-max" placeholder="Ziel (Zahl)" style="margin: 0; flex: 1;">
                         <select id="cgoal-importance" style="margin: 0; flex: 1;">
                             <option value="Niedrig">Niedrig</option>
                             <option value="Mittel" selected>Mittel</option>
@@ -461,7 +460,7 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        /* --- NEU: LESEZEICHEN / LINKS --- */
+        /* --- LESEZEICHEN / LINKS --- */
         let links = [];
         function addLink() {
             const name = document.getElementById("link-name").value; 
@@ -482,24 +481,25 @@
         }
         function loadLinks() { const saved = localStorage.getItem("myLinks"); if(saved) links = JSON.parse(saved); renderLinks(); }
 
-        /* --- NEU: ZIELE & FORTSCHRITT --- */
+        /* --- ZIELE & FORTSCHRITT --- */
         let customGoals = [];
         function addCustomGoal() {
             const name = document.getElementById("cgoal-name").value; 
-            const max = parseInt(document.getElementById("cgoal-max").value);
+            const max = 100; // Automatisch auf 100 gesetzt
             const imp = document.getElementById("cgoal-importance").value;
-            if(!name || !max) return;
+            if(!name) return;
             customGoals.push({ name: name, current: 0, max: max, importance: imp }); 
             localStorage.setItem("myCustomGoals", JSON.stringify(customGoals));
-            document.getElementById("cgoal-name").value = ""; document.getElementById("cgoal-max").value = "";
+            document.getElementById("cgoal-name").value = "";
             renderCustomGoals(); pushToCloud();
         }
-        function increaseGoalProgress(index) {
-            if(customGoals[index].current < customGoals[index].max) {
-                customGoals[index].current++;
-                localStorage.setItem("myCustomGoals", JSON.stringify(customGoals));
-                renderCustomGoals(); pushToCloud();
-            }
+        function updateGoalProgress(index, amount) {
+            customGoals[index].current += amount;
+            if (customGoals[index].current > customGoals[index].max) customGoals[index].current = customGoals[index].max;
+            if (customGoals[index].current < 0) customGoals[index].current = 0;
+            
+            localStorage.setItem("myCustomGoals", JSON.stringify(customGoals));
+            renderCustomGoals(); pushToCloud();
         }
         function deleteCustomGoal(index) { customGoals.splice(index, 1); localStorage.setItem("myCustomGoals", JSON.stringify(customGoals)); renderCustomGoals(); pushToCloud(); }
         function renderCustomGoals() {
@@ -507,14 +507,17 @@
             customGoals.forEach((g, index) => {
                 const percent = Math.min(100, Math.round((g.current / g.max) * 100));
                 let badgeClass = g.importance === 'Hoch' ? 'badge-hoch' : (g.importance === 'Mittel' ? 'badge-mittel' : 'badge-niedrig');
-                let buttonDisabled = g.current >= g.max ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '';
+                
+                let buttonDisabledUp = g.current >= g.max ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '';
+                let buttonDisabledDown = g.current <= 0 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '';
                 
                 list.innerHTML += `
                 <li style="flex-direction: column; align-items: stretch; gap: 5px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span><strong>${g.name}</strong> <span class="${badgeClass}">${g.importance}</span></span>
                         <div style="display:flex; gap: 5px;">
-                            <button class="btn-done" onclick="increaseGoalProgress(${index})" ${buttonDisabled}>+1</button>
+                            <button class="btn-done" onclick="updateGoalProgress(${index}, -10)" ${buttonDisabledDown} style="background: #e94560;">-10</button>
+                            <button class="btn-done" onclick="updateGoalProgress(${index}, 10)" ${buttonDisabledUp}>+10</button>
                             <button class="delete-btn" onclick="deleteCustomGoal(${index})">🗑️</button>
                         </div>
                     </div>
