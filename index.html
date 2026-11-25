@@ -227,6 +227,50 @@
                 </div>
 
                 <div class="card">
+                    <h2>🩺 Blutdruck</h2>
+
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <input type="date" id="bp-date" style="margin:0; flex: 1;">
+                        <select id="bp-time" style="margin:0; flex: 1;">
+                            <option value="Morgens">🌅 Morgens</option>
+                            <option value="Abends">🌙 Abends</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="number" id="bp-sys" placeholder="Oben (sys.)" oninput="updateBPLive()" style="margin:0; flex: 1;">
+                        <input type="number" id="bp-dia" placeholder="Unten (dia.)" oninput="updateBPLive()" style="margin:0; flex: 1;">
+                        <input type="number" id="bp-pulse" placeholder="Puls (optional)" style="margin:0; flex: 1;">
+                    </div>
+                    <div id="bp-live" style="min-height: 44px; margin-bottom: 5px;"></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="addBPData()">Eintragen</button>
+                        <button class="btn-secondary" onclick="openBPManageModal()">Verwalten</button>
+                    </div>
+
+                    <div id="bp-latest" style="background: #1a1a2e; border: 1px solid #4ecca3; padding: 15px; border-radius: 10px; margin-top: 25px;"></div>
+                    <div id="bp-stats" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;"></div>
+
+                    <h4 style="margin: 25px 0 10px 0;">Dein Verlauf</h4>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="bp-filter-time" onchange="renderBP()" style="margin:0; flex: 1;">
+                            <option value="all">Morgens + Abends</option>
+                            <option value="Morgens">🌅 Nur Morgens</option>
+                            <option value="Abends">🌙 Nur Abends</option>
+                        </select>
+                        <select id="bp-filter-range" onchange="renderBP()" style="margin:0; flex: 1;">
+                            <option value="last10">Letzte 10 Messungen</option>
+                            <option value="7">Letzte 7 Tage</option>
+                            <option value="30">Letzte 30 Tage</option>
+                            <option value="90">Letzte 90 Tage</option>
+                            <option value="all">Alles</option>
+                        </select>
+                    </div>
+                    <div class="chart-container"><canvas id="bpChart" style="max-height: 280px;"></canvas></div>
+                    <div id="bp-legend" class="legend-text" style="margin-top: 10px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;"></div>
+                    <div class="legend-text" style="margin-bottom: 0;">Gestrichelt: Grenze 140 / 90 mmHg. Einstufung nach ESC/ESH (Praxiswerte), nur eine Orientierung – kein Ersatz für ärztliche Beurteilung.</div>
+                </div>
+
+                <div class="card">
                     <h2>🎯 Meine Ziele (0-100%)</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px;">
                         <input type="text" id="cgoal-name" placeholder="Was willst du erreichen?" style="margin: 0; flex: 2;">
@@ -358,6 +402,14 @@
         </div>
     </div>
 
+    <div id="manage-bp-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Blutdruck Verwalten</h2>
+            <ul id="all-bp-list" style="max-height:400px; overflow-y:auto; margin-bottom:15px; padding-right:5px;"></ul>
+            <button class="btn-secondary" onclick="closeModals()">Schließen</button>
+        </div>
+    </div>
+
     <div id="manage-health-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top:0;">Gesundheit Verwalten</h2>
@@ -402,7 +454,8 @@
                 goals: JSON.parse(localStorage.getItem("myGoals") || "{}"),
                 links: links,
                 customGoals: customGoals,
-                savedFiles: savedFiles
+                savedFiles: savedFiles,
+                bpData: bpData
             };
             const jsonStr = JSON.stringify(allData);
             const encryptedData = CryptoJS.AES.encrypt(jsonStr, config.password).toString();
@@ -443,8 +496,9 @@
                     if(parsedData.links) { links = parsedData.links; localStorage.setItem("myLinks", JSON.stringify(links)); }
                     if(parsedData.customGoals) { customGoals = parsedData.customGoals; localStorage.setItem("myCustomGoals", JSON.stringify(customGoals)); }
                     if(parsedData.savedFiles) { savedFiles = parsedData.savedFiles; localStorage.setItem("mySavedFiles", JSON.stringify(savedFiles)); }
+                    if(parsedData.bpData) { bpData = parsedData.bpData; localStorage.setItem("myBPData", JSON.stringify(bpData)); }
 
-                    loadBirthdays(); loadRoutines(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals(); loadFiles();
+                    loadBirthdays(); loadRoutines(); loadTodos(); loadGoals(); loadHealthData(); loadBP(); loadLinks(); loadCustomGoals(); loadFiles();
                     document.getElementById('sync-status').innerText = "✅ Cloud: Aktuell";
                 } else { document.getElementById('sync-status').innerText = "✅ Cloud leer / Initialisiert"; }
             } catch(e) { alert("Fehler! Passwort oder Token falsch."); document.getElementById('sync-status').innerText = "❌ Sync Fehler!"; }
@@ -464,7 +518,7 @@
             if (enteredHash === secretHash) {
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
-                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals(); loadFiles(); pullFromCloud();
+                loadBirthdays(); loadRoutines(); loadSavedWeather(); loadTodos(); loadGoals(); loadHealthData(); loadLinks(); loadCustomGoals(); loadFiles(); loadBP(); pullFromCloud();
             } else {
                 document.getElementById("error-msg").style.display = "block"; document.getElementById("pin-input").value = ""; 
             }
@@ -836,6 +890,194 @@
             return new Chart(ctx, { type: 'line', data: { labels: labels, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, labels: { boxWidth: 12 } } }, scales: { y: yOptions } } });
         }
 
+        /* --- 5b. BLUTDRUCK --- */
+        let bpData = []; let bpChartInstance = null;
+
+        // Einstufung nach ESC/ESH-Leitlinie (Praxiswerte, mmHg). Der schlechtere der beiden Werte zählt.
+        const BP_LEVELS = {
+            low:        { label: 'Zu niedrig',            rating: 'Niedrig',   icon: '🔵', color: '#3498db', text: '#ffffff', hint: 'Unter 100/60. Ohne Beschwerden meist unproblematisch – bei Schwindel oder Ohnmacht ärztlich abklären.' },
+            optimal:    { label: 'Optimal',               rating: 'Gut',       icon: '🟢', color: '#2ecc71', text: '#1a1a2e', hint: 'Unter 120/80 – ideal.' },
+            normal:     { label: 'Normal',                rating: 'Gut',       icon: '🟢', color: '#8bd450', text: '#1a1a2e', hint: '120–129 / 80–84 – im Normbereich.' },
+            highnormal: { label: 'Hoch-normal',           rating: 'Okay',      icon: '🟡', color: '#f1c40f', text: '#1a1a2e', hint: '130–139 / 85–89 – Grenzbereich, im Auge behalten.' },
+            g1:         { label: 'Bluthochdruck Grad 1',  rating: 'Erhöht',    icon: '🟠', color: '#e67e22', text: '#1a1a2e', hint: '140–159 / 90–99 – erhöht. Bei wiederholt solchen Werten ärztlich abklären.' },
+            g2:         { label: 'Bluthochdruck Grad 2',  rating: 'Hoch',      icon: '🔴', color: '#e74c3c', text: '#ffffff', hint: '160–179 / 100–109 – deutlich erhöht, bitte ärztlich abklären lassen.' },
+            g3:         { label: 'Bluthochdruck Grad 3',  rating: 'Sehr hoch', icon: '🟣', color: '#d81b60', text: '#ffffff', hint: 'Ab 180 / 110 – bitte zeitnah ärztlich abklären. Bei Brustschmerz, Atemnot, Sehstörung oder starken Kopfschmerzen sofort Notruf 144 / 112.' }
+        };
+        const BP_LEGEND_ORDER = ['low', 'optimal', 'normal', 'highnormal', 'g1', 'g2', 'g3'];
+
+        function localISODate(d = new Date()) {
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+        }
+        function evalBP(sys, dia) {
+            let key;
+            if (sys >= 180 || dia >= 110) key = 'g3';
+            else if (sys >= 160 || dia >= 100) key = 'g2';
+            else if (sys >= 140 || dia >= 90) key = 'g1';
+            else if (sys >= 130 || dia >= 85) key = 'highnormal';
+            else if (sys >= 120 || dia >= 80) key = 'normal';
+            else if (sys < 100 || dia < 60) key = 'low';
+            else key = 'optimal';
+            const lvl = { key, ...BP_LEVELS[key] };
+            if (sys >= 140 && dia < 90) lvl.label += ' (isoliert systolisch)';
+            return lvl;
+        }
+        function bpBadge(lvl, small) {
+            return `<span style="background:${lvl.color}; color:${lvl.text}; padding:${small ? '2px 8px' : '4px 12px'}; border-radius:12px; font-weight:bold; font-size:${small ? '11px' : '13px'}; display:inline-block;">${lvl.icon} ${lvl.rating} · ${lvl.label}</span>`;
+        }
+        function bpTimeIcon(t) { return t === 'Abends' ? '🌙' : '🌅'; }
+        function bpSort(a, b) { return a.date.localeCompare(b.date) || ((a.time === 'Abends') - (b.time === 'Abends')); }
+
+        function updateBPLive() {
+            const sys = parseInt(document.getElementById('bp-sys').value); const dia = parseInt(document.getElementById('bp-dia').value);
+            const box = document.getElementById('bp-live');
+            if (!sys || !dia) { box.innerHTML = "<span style='color:#a0a0a0; font-size:13px;'>Werte eintragen – die Einstufung erscheint sofort.</span>"; return; }
+            if (sys <= dia) { box.innerHTML = "<span style='color:#e94560; font-size:13px;'>⚠️ Oben (systolisch) muss höher sein als unten (diastolisch).</span>"; return; }
+            const lvl = evalBP(sys, dia);
+            box.innerHTML = `${bpBadge(lvl)}<div style="font-size:12px; color:#a0a0a0; margin-top:6px;">${lvl.hint}</div>`;
+        }
+
+        function addBPData() {
+            const date = document.getElementById('bp-date').value; const time = document.getElementById('bp-time').value;
+            const sys = parseInt(document.getElementById('bp-sys').value); const dia = parseInt(document.getElementById('bp-dia').value);
+            const pulseVal = document.getElementById('bp-pulse').value; const pulse = pulseVal ? parseInt(pulseVal) : null;
+            if (!date) return alert("Bitte Datum wählen!");
+            if (!sys || !dia) return alert("Bitte oberen und unteren Wert eintragen!");
+            if (sys < 50 || sys > 300 || dia < 30 || dia > 200) return alert("Die Werte sehen unplausibel aus. Bitte prüfen!");
+            if (sys <= dia) return alert("Der obere Wert muss höher sein als der untere!");
+            bpData.push({ date: date, time: time, sys: sys, dia: dia, pulse: pulse });
+            localStorage.setItem("myBPData", JSON.stringify(bpData));
+            document.getElementById('bp-sys').value = ""; document.getElementById('bp-dia').value = ""; document.getElementById('bp-pulse').value = "";
+            updateBPLive(); renderBP(); pushToCloud();
+        }
+
+        function loadBP() {
+            const saved = localStorage.getItem("myBPData"); if (saved) bpData = JSON.parse(saved);
+            const dateEl = document.getElementById('bp-date'); if (!dateEl.value) dateEl.value = localISODate();
+            updateBPLive(); renderBP();
+        }
+
+        function bpApplyRange(data) {
+            const r = document.getElementById('bp-filter-range').value;
+            if (r === 'last10') return data.slice(-10);
+            if (r === 'all') return data;
+            const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - parseInt(r));
+            const c = localISODate(cutoff);
+            return data.filter(d => d.date >= c);
+        }
+        function getBPFiltered() {
+            let data = [...bpData].sort(bpSort);
+            const t = document.getElementById('bp-filter-time').value;
+            if (t !== 'all') data = data.filter(d => d.time === t);
+            return bpApplyRange(data);
+        }
+
+        function renderBP() {
+            // Legende
+            document.getElementById('bp-legend').innerHTML = BP_LEGEND_ORDER.map(k => `<span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${BP_LEVELS[k].color}; margin-right:4px;"></span>${BP_LEVELS[k].label}</span>`).join("");
+
+            // Letzte Messung
+            const latestBox = document.getElementById('bp-latest');
+            const all = [...bpData].sort(bpSort);
+            if (all.length === 0) {
+                latestBox.innerHTML = "<span style='color:#a0a0a0; font-size:14px;'>Noch keine Messung eingetragen.</span>";
+            } else {
+                const l = all[all.length - 1]; const lvl = evalBP(l.sys, l.dia);
+                latestBox.innerHTML = `
+                    <div style="font-size:12px; color:#a0a0a0; margin-bottom:4px;">Letzte Messung: ${new Date(l.date).toLocaleDateString('de-DE')} · ${bpTimeIcon(l.time)} ${l.time}</div>
+                    <div style="font-size:30px; font-weight:bold; color:${lvl.color};">${l.sys} / ${l.dia} <small style="font-size:14px; color:#a0a0a0; font-weight:normal;">mmHg${l.pulse ? ' · Puls ' + l.pulse : ''}</small></div>
+                    <div style="margin-top:6px;">${bpBadge(lvl)}</div>
+                    <div style="font-size:12px; color:#a0a0a0; margin-top:6px;">${lvl.hint}</div>`;
+            }
+
+            // Durchschnitte (Zeitraum-Filter, getrennt nach Morgens/Abends)
+            const ranged = bpApplyRange(all); let statsHtml = "";
+            ['Morgens', 'Abends'].forEach(t => {
+                const arr = ranged.filter(d => d.time === t); if (arr.length === 0) return;
+                const s = Math.round(arr.reduce((a, d) => a + d.sys, 0) / arr.length);
+                const di = Math.round(arr.reduce((a, d) => a + d.dia, 0) / arr.length);
+                statsHtml += `<div style="flex:1; min-width:140px; background:#0f3460; border-radius:10px; padding:10px;">
+                    <div style="font-size:12px; color:#a0a0a0;">Ø ${bpTimeIcon(t)} ${t} (${arr.length}×)</div>
+                    <div style="font-size:20px; font-weight:bold; margin:3px 0 6px 0;">${s} / ${di}</div>${bpBadge(evalBP(s, di), true)}</div>`;
+            });
+            document.getElementById('bp-stats').innerHTML = statsHtml;
+
+            drawBPChart();
+        }
+
+        function drawBPChart() {
+            const data = getBPFiltered(); const n = data.length;
+            const labels = data.map(d => [new Date(d.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }), bpTimeIcon(d.time)]);
+            const colors = data.map(d => evalBP(d.sys, d.dia).color);
+            const ctx = document.getElementById('bpChart').getContext('2d');
+            if (bpChartInstance) bpChartInstance.destroy();
+            const lineBase = { pointBackgroundColor: colors, pointBorderColor: '#16213e', pointBorderWidth: 2, pointRadius: 6, borderWidth: 2, tension: 0.3, spanGaps: true };
+            bpChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [
+                    { ...lineBase, label: 'Oben (systolisch)', data: data.map(d => d.sys), borderColor: '#e94560', backgroundColor: '#e94560' },
+                    { ...lineBase, label: 'Unten (diastolisch)', data: data.map(d => d.dia), borderColor: '#4facf7', backgroundColor: '#4facf7' },
+                    { label: 'Grenze 140', data: Array(n).fill(140), borderColor: 'rgba(233,69,96,0.5)', borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false, tension: 0 },
+                    { label: 'Grenze 90', data: Array(n).fill(90), borderColor: 'rgba(79,172,247,0.6)', borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false, tension: 0 }
+                ] },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { boxWidth: 12, filter: item => item.datasetIndex < 2 } },
+                        tooltip: { callbacks: { footer: items => { const d = data[items[0].dataIndex]; return d ? `${d.time}: ${evalBP(d.sys, d.dia).rating} · ${evalBP(d.sys, d.dia).label}${d.pulse ? ' | Puls ' + d.pulse : ''}` : ''; } } }
+                    },
+                    scales: { y: { suggestedMin: 40, suggestedMax: 170 } }
+                }
+            });
+        }
+
+        function openBPManageModal() {
+            const list = document.getElementById("all-bp-list"); list.innerHTML = "";
+            const mapped = bpData.map((d, i) => ({ ...d, originalIndex: i })).sort((a, b) => bpSort(b, a));
+            if (mapped.length === 0) list.innerHTML = "<p style='color:#a0a0a0; font-size:14px;'>Keine Messungen gespeichert.</p>";
+            mapped.forEach(d => {
+                const lvl = evalBP(d.sys, d.dia);
+                list.innerHTML += `<li id="bp-item-${d.originalIndex}">
+                    <span><strong>${new Date(d.date).toLocaleDateString('de-DE')}</strong> ${bpTimeIcon(d.time)} ${d.time}<br>
+                    <small style="color:#a0a0a0;">${d.sys} / ${d.dia} mmHg${d.pulse ? ' | Puls ' + d.pulse : ''}</small><br>${bpBadge(lvl, true)}</span>
+                    <div style="display:flex; gap:5px;"><button class="btn-edit" onclick="editBPData(${d.originalIndex})">✏️</button><button class="delete-btn" onclick="deleteBPData(${d.originalIndex})">🗑️</button></div>
+                </li>`;
+            });
+            document.getElementById("manage-bp-modal").style.display = "flex";
+        }
+        function editBPData(i) {
+            const d = bpData[i];
+            document.getElementById(`bp-item-${i}`).innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+                    <input type="date" id="edit-bp-date-${i}" value="${d.date}">
+                    <select id="edit-bp-time-${i}">
+                        <option value="Morgens" ${d.time === 'Morgens' ? 'selected' : ''}>🌅 Morgens</option>
+                        <option value="Abends" ${d.time === 'Abends' ? 'selected' : ''}>🌙 Abends</option>
+                    </select>
+                    <input type="number" id="edit-bp-sys-${i}" value="${d.sys}" placeholder="Oben (sys.)">
+                    <input type="number" id="edit-bp-dia-${i}" value="${d.dia}" placeholder="Unten (dia.)">
+                    <input type="number" id="edit-bp-pulse-${i}" value="${d.pulse || ''}" placeholder="Puls (optional)">
+                    <div style="display:flex; gap:10px; margin-top:5px;">
+                        <button onclick="saveEditBP(${i})" style="margin:0; background:#2ecc71;">💾 Speichern</button><button onclick="openBPManageModal()" style="margin:0; background:#e94560;">❌</button>
+                    </div>
+                </div>`;
+        }
+        function saveEditBP(i) {
+            const date = document.getElementById(`edit-bp-date-${i}`).value;
+            const sys = parseInt(document.getElementById(`edit-bp-sys-${i}`).value); const dia = parseInt(document.getElementById(`edit-bp-dia-${i}`).value);
+            const pv = document.getElementById(`edit-bp-pulse-${i}`).value;
+            if (!date || !sys || !dia) return alert("Datum, oberer und unterer Wert dürfen nicht leer sein!");
+            if (sys <= dia) return alert("Der obere Wert muss höher sein als der untere!");
+            bpData[i] = { date: date, time: document.getElementById(`edit-bp-time-${i}`).value, sys: sys, dia: dia, pulse: pv ? parseInt(pv) : null };
+            localStorage.setItem("myBPData", JSON.stringify(bpData)); renderBP(); openBPManageModal(); pushToCloud();
+        }
+        function deleteBPData(i) {
+            bpData.splice(i, 1); localStorage.setItem("myBPData", JSON.stringify(bpData)); renderBP(); openBPManageModal(); pushToCloud();
+        }
+
+        // Standard: Tageszeit passend vorauswählen
+        document.getElementById('bp-time').value = new Date().getHours() < 15 ? 'Morgens' : 'Abends';
+
         /* --- 6. WETTER & GEBURTSTAGE --- */
         function getWeatherEmoji(code) {
             const codes = {
@@ -946,8 +1188,8 @@
             document.getElementById("add-modal").style.display = "none"; document.getElementById("manage-modal").style.display = "none"; 
             document.getElementById("manage-health-modal").style.display = "none"; document.getElementById("add-routine-modal").style.display = "none";
             document.getElementById("manage-routine-modal").style.display = "none"; document.getElementById("cloud-modal").style.display = "none";
+            document.getElementById("manage-bp-modal").style.display = "none";
         }
     </script>
 </body>
 </html>
-
